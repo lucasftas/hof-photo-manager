@@ -1,0 +1,17 @@
+# Build artifacts
+HOF_Reverse/
+*.exe
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# App runtime files
+config_hofphotomanager.json
+debug_detalhado.txt
+
+# IDE
+.vscode/
+.idea/
+.claude/
