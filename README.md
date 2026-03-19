@@ -36,11 +36,26 @@ Destino/
 ## Uso
 
 ```bash
-pip install Pillow
+pip install -r requirements.txt
 python photomanagerHOF.py
 ```
 
 Ou use o executável standalone `HOF_Photo_Manager.exe` (não requer Python instalado).
+
+## Estrutura do Projeto
+
+```
+photomanagerHOF.py      # Entry point
+src/
+├── __init__.py
+├── constants.py        # Constantes, theme, enums
+├── config.py           # ConfigManager com validação
+├── models.py           # FotoItem, GrupoPaciente
+├── utils.py            # safe_name(), logging, thumbnails
+├── dialogs.py          # ConflictDialog, editores
+├── processing.py       # Threads de análise e cópia
+└── app.py              # AppOrganizador (UI principal)
+```
 
 ## Configuração
 
