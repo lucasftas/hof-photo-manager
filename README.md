@@ -2,17 +2,27 @@
 
 Ferramenta desktop para organizar fotos clínicas de procedimentos estéticos. Detecta cartões SD automaticamente, agrupa fotos por sessão via EXIF e organiza em estrutura de pastas padronizada.
 
+## Download
+
+[**Baixar HOF_Photo_Manager.exe (ultima versao)**](https://github.com/lucasftas/hof-photo-manager/releases/latest)
+
+> Não requer Python instalado — executável standalone para Windows.
+
 ## Funcionalidades
 
 - **Detecção automática de cartões SD** — escaneia drives por pastas DCIM
-- **Agrupamento inteligente** — agrupa fotos por proximidade temporal (threshold de 20min) usando data EXIF
+- **Agrupamento inteligente** — agrupa fotos por proximidade temporal usando data EXIF
+- **Timeline visual** — miniaturas de todas as fotos com indicadores de mudança EXIF
+- **Divisores visuais** — ferramenta tesoura para dividir grupos com preview em tempo real
+- **Threshold ajustavel** — de 1min a 60min por grupo individual
+- **Duas colunas** — esquerda (não tratados) e direita (tratados em árvore por paciente)
+- **Auto-sugestão de etapa** — Pré para o mais antigo, Pós imediato para o mais recente
 - **Preview com thumbnails** — navegação entre fotos, rotação, minimizar/expandir grupos
-- **Formulário por grupo** — Professor, Paciente, Procedimento e Etapa (com sync entre grupos selecionados)
-- **Filtro por data** — filtra grupos por intervalo de datas
-- **Merge de grupos** — mescla grupos selecionados em um só
+- **Formulário por grupo** — Professor, Paciente, Procedimento e Etapa
 - **Cópia organizada** — copia para hierarquia `Professor/Paciente/Procedimento/Etapa/{JPG,RAW}`
-- **Resolução de conflitos** — dialog para mesclar, renomear ou cancelar em caso de pasta existente
-- **Configuração persistente** — listas de professores, procedimentos e etapas editáveis via menu
+- **Resolução de conflitos** — auto-merge em caso de pasta existente
+- **Sessão persistente** — fontes e destino salvos entre sessões
+- **Configuração persistente** — listas de professores, procedimentos e etapas editáveis
 
 ## Estrutura de Pastas Gerada
 
@@ -28,41 +38,36 @@ Destino/
                     └── paciente - proc - etapa - foto.arw
 ```
 
-## Requisitos
-
-- Python 3.10+
-- Pillow (`pip install Pillow`)
-
-## Uso
+## Desenvolvimento
 
 ```bash
 pip install -r requirements.txt
 python photomanagerHOF.py
 ```
 
-Ou use o executável standalone `HOF_Photo_Manager.exe` (não requer Python instalado).
+### Build
 
-## Estrutura do Projeto
+```bash
+python -m PyInstaller --onefile --windowed --name HOF_Photo_Manager --add-data "src/ui.html;src" --exclude-module tkinter photomanagerHOF.py
+```
+
+### Estrutura do Projeto
 
 ```
-photomanagerHOF.py      # Entry point
+photomanagerHOF.py      # Entry point (pywebview)
 src/
 ├── __init__.py
-├── constants.py        # Constantes, theme, enums
+├── constants.py        # Constantes, EXIF tags, enums
 ├── config.py           # ConfigManager com validação
 ├── models.py           # FotoItem, GrupoPaciente
-├── utils.py            # safe_name(), logging, thumbnails
-├── dialogs.py          # ConflictDialog, editores
+├── utils.py            # safe_name(), logging
 ├── processing.py       # Threads de análise e cópia
-└── app.py              # AppOrganizador (UI principal)
+├── webview_api.py      # API bridge Python ↔ JavaScript
+└── ui.html             # Frontend HTML/CSS/JS
 ```
-
-## Configuração
-
-O app salva configurações em `config_hofphotomanager.json` no diretório de execução. Listas de professores, procedimentos e etapas podem ser editadas pelo menu **Configurações**.
 
 ## Stack
 
-- Python 3.12 + Tkinter
+- Python 3.12 + PyWebView
 - Pillow (thumbnails e leitura EXIF)
 - PyInstaller (build do executável)
