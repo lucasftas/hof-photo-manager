@@ -199,10 +199,214 @@ body {
     overflow: hidden;
 }
 
+.groups-columns {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
 .groups-panel {
     flex: 1;
     overflow-y: auto;
     padding: 12px 16px;
+    min-width: 0;
+}
+
+/* Right panel (treated groups tree) */
+.treated-panel {
+    width: 0;
+    overflow-y: auto;
+    padding: 0;
+    background: #fafbfc;
+    border-left: none;
+    transition: width 0.25s, padding 0.25s, border 0.25s;
+    flex-shrink: 0;
+}
+.treated-panel.visible {
+    width: 340px;
+    padding: 12px;
+    border-left: 1px solid #e0e0e0;
+}
+
+.treated-panel .panel-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* Tree node (patient) */
+.tree-node {
+    margin-bottom: 4px;
+}
+.tree-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #e6f4ea;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: #137333;
+    transition: background 0.15s;
+}
+.tree-header:hover { background: #d0ebda; }
+.tree-header .arrow {
+    font-size: 10px;
+    width: 14px;
+    text-align: center;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+.tree-header .arrow.open { transform: rotate(90deg); }
+.tree-header .node-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tree-header .node-count {
+    font-size: 10px;
+    font-weight: 400;
+    color: #555;
+    flex-shrink: 0;
+}
+.tree-header .tree-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.tree-actions .tree-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #a5d6a7;
+    border-radius: 5px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #137333;
+    transition: background 0.15s;
+}
+.tree-actions .tree-btn:hover { background: #e6f4ea; }
+.tree-actions .tree-btn.undo:hover { background: #fce8e6; color: #c5221f; border-color: #f5c6cb; }
+
+.tree-children {
+    padding-left: 12px;
+    border-left: 2px solid #c8e6c9;
+    margin-left: 14px;
+    margin-top: 2px;
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.3s ease;
+}
+.tree-children.collapsed {
+    max-height: 0;
+    margin-top: 0;
+}
+
+/* Treated group mini card */
+.treated-card {
+    padding: 5px 8px;
+    margin: 2px 0;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #444;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.treated-card:hover { background: #f8f9fa; border-color: #007bff; }
+.treated-card.tc-expanded { border-color: #007bff; border-width: 2px; background: #f0f7ff; }
+.treated-card .tc-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.treated-card .tc-info { flex: 1; min-width: 0; }
+.treated-card .tc-time { font-weight: 600; }
+.treated-card .tc-meta { color: #888; font-size: 10px; }
+.treated-card .tc-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 0; }
+.treated-card .tc-badges .badge { font-size: 9px; padding: 1px 5px; }
+.treated-card .tc-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.tc-actions .tc-btn {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s;
+}
+.tc-actions .tc-btn:hover { background: #f0f0f0; }
+.tc-actions .tc-btn.undo:hover { background: #fce8e6; color: #c5221f; }
+
+/* Etapa tags inside treated cards */
+.tc-etapas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+}
+.tc-etapas .tag {
+    font-size: 10px;
+    padding: 2px 8px;
+}
+
+/* Treated card preview (expanded) */
+.tc-preview {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.tc-preview .thumb-section { flex-shrink: 0; }
+.tc-preview .thumb-img { width: 110px; height: 110px; }
+.tc-preview .form-section { flex: 1; min-width: 0; }
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #137333;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 /* Bottom bar (view controls) */
@@ -613,10 +817,13 @@ body {
 
         <!-- Content -->
         <div class="content-area">
-            <div class="groups-panel" id="groupsPanel">
-                <div class="empty-state">
-                    <p>Detecte cartoes ou adicione uma pasta para comecar</p>
+            <div class="groups-columns">
+                <div class="groups-panel" id="groupsPanel">
+                    <div class="empty-state">
+                        <p>Detecte cartoes ou adicione uma pasta para comecar</p>
+                    </div>
                 </div>
+                <div class="treated-panel" id="treatedPanel"></div>
             </div>
 
             <!-- Bottom bar -->
@@ -659,6 +866,37 @@ body {
         </div>
     </div>
 
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Edit Treated Modal (edits all groups of a patient) -->
+    <div class="modal-overlay hidden" id="editTreatedModal">
+        <div class="modal">
+            <h3>Editar Paciente</h3>
+            <div class="modal-body">
+                <div class="merge-info" id="editTreatedInfo"></div>
+                <div class="form-row">
+                    <label>Paciente</label>
+                    <input type="text" id="editPaciente" placeholder="Nome da paciente...">
+                </div>
+                <div class="form-row">
+                    <label>Professor</label>
+                    <input type="text" id="editProf" list="editProfList" placeholder="Digite ou selecione...">
+                    <datalist id="editProfList"></datalist>
+                </div>
+                <div class="form-row">
+                    <label>Procedimento</label>
+                    <input type="text" id="editProc" list="editProcList" placeholder="Digite ou selecione...">
+                    <datalist id="editProcList"></datalist>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharEditTreated()">Cancelar</button>
+                <button class="primary" onclick="salvarEditPacienteGrupo()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Progress Modal -->
     <div class="modal-overlay hidden" id="progressModal">
         <div class="modal">
@@ -688,6 +926,9 @@ async function py(method, ...args) {
     return await window.pywebview.api[method](...args);
 }
 
+let treeState = {}; // { paciente_name: true/false } — tracks open/closed nodes
+let expandedTreatedId = null; // which treated card is showing preview
+
 // ==================== Init ====================
 window.addEventListener('pywebviewready', async function() {
     const state = await py('get_initial_state');
@@ -701,6 +942,40 @@ window.addEventListener('pywebviewready', async function() {
     configProcedimentos = state.procedimentos || [];
     configEtapas = state.etapas || [];
     checkReady();
+});
+
+// ==================== ESC deselects ====================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Close modals if open
+        if (!document.getElementById('editTreatedModal').classList.contains('hidden')) {
+            fecharEditTreated();
+            return;
+        }
+        if (!document.getElementById('tratamentoModal').classList.contains('hidden')) {
+            fecharTratamentoPopup();
+            return;
+        }
+        // Close treated preview
+        if (expandedTreatedId !== null) {
+            expandedTreatedId = null;
+            renderGroups();
+            return;
+        }
+        // Deselect all groups
+        var changed = false;
+        for (var i = 0; i < grupos.length; i++) {
+            if (grupos[i].selecionado) {
+                grupos[i].selecionado = false;
+                py('toggle_select', grupos[i].id, false);
+                changed = true;
+            }
+        }
+        if (changed) {
+            renderGroups();
+            document.getElementById('statusbar').textContent = 'Selecao limpa';
+        }
+    }
 });
 
 // ==================== Fontes ====================
@@ -769,11 +1044,13 @@ function checkReady() {
 async function iniciarAnalise() {
     document.getElementById('btnAnalisar').disabled = true;
     document.getElementById('statusbar').textContent = 'Analisando arquivos... aguarde.';
+    showToast('Analisando fotos...');
 
     const result = await py('iniciar_analise');
 
     if (result.error) {
         alert(result.error);
+        showToast('Erro na analise', 2500);
     } else if (result.grupos) {
         grupos = result.grupos;
         configProfessores = result.professores || configProfessores;
@@ -783,6 +1060,7 @@ async function iniciarAnalise() {
         renderGroups();
         document.getElementById('btnTratar').disabled = false;
         document.getElementById('statusbar').textContent = 'Analise concluida: ' + grupos.length + ' grupos encontrados.';
+        showToast('Analise concluida: ' + grupos.length + ' grupos encontrados', 2500);
     }
     document.getElementById('btnAnalisar').disabled = false;
     checkReady();
@@ -790,32 +1068,266 @@ async function iniciarAnalise() {
 
 // ==================== Render Groups ====================
 function renderGroups(filterFrom, filterTo) {
-    const panel = document.getElementById('groupsPanel');
+    var panel = document.getElementById('groupsPanel');
+    var treatedPanel = document.getElementById('treatedPanel');
     panel.innerHTML = '';
 
-    if (!grupos.length) {
-        panel.innerHTML = '<div class="empty-state"><p>Nenhum grupo encontrado</p></div>';
-        return;
-    }
-
-    var lastMarker = '';
+    // Split groups into untreated (left) and treated (right)
+    var untreated = [];
+    var treated = [];
     for (var i = 0; i < grupos.length; i++) {
         var g = grupos[i];
         if (filterFrom && filterTo) {
             var gDate = new Date(g.inicio_iso);
             if (gDate < filterFrom || gDate > filterTo) continue;
         }
-
-        var marker = g.data_formatada + ' - ' + g.periodo;
-        if (marker !== lastMarker) {
-            panel.innerHTML += '<div class="day-header">' + marker + '</div>';
-            lastMarker = marker;
+        if (g.dados_form.paciente) {
+            treated.push(g);
+        } else {
+            untreated.push(g);
         }
-        panel.innerHTML += buildGroupCard(g);
+    }
+
+    // Left column: untreated groups
+    if (!grupos.length) {
+        panel.innerHTML = '<div class="empty-state"><p>Nenhum grupo encontrado</p></div>';
+    } else if (!untreated.length) {
+        panel.innerHTML = '<div class="empty-state"><p>Todos os grupos foram tratados</p></div>';
+    } else {
+        var lastMarker = '';
+        for (var i = 0; i < untreated.length; i++) {
+            var g = untreated[i];
+            var marker = g.data_formatada + ' - ' + g.periodo;
+            if (marker !== lastMarker) {
+                panel.innerHTML += '<div class="day-header">' + marker + '</div>';
+                lastMarker = marker;
+            }
+            panel.innerHTML += buildGroupCard(g);
+        }
+    }
+
+    // Right column: treated groups tree
+    if (treated.length > 0) {
+        treatedPanel.classList.add('visible');
+        treatedPanel.innerHTML = '<div class="panel-title">Tratados (' + treated.length + ')</div>';
+        treatedPanel.innerHTML += buildTreatedTree(treated);
+    } else {
+        treatedPanel.classList.remove('visible');
+        treatedPanel.innerHTML = '';
     }
 
     updateSummary();
     checkReady();
+}
+
+function buildTreatedTree(treated) {
+    // Group by patient name
+    var byPatient = {};
+    var patientOrder = [];
+    for (var i = 0; i < treated.length; i++) {
+        var g = treated[i];
+        var name = g.dados_form.paciente;
+        if (!byPatient[name]) {
+            byPatient[name] = [];
+            patientOrder.push(name);
+        }
+        byPatient[name].push(g);
+    }
+
+    var html = '';
+    for (var p = 0; p < patientOrder.length; p++) {
+        var name = patientOrder[p];
+        var items = byPatient[name];
+        var isOpen = treeState[name] !== false; // open by default
+        var arrowClass = isOpen ? 'arrow open' : 'arrow';
+        var childClass = isOpen ? 'tree-children' : 'tree-children collapsed';
+
+        var totalFotos = 0;
+        for (var j = 0; j < items.length; j++) totalFotos += items[j].total_clicks;
+
+        var safeName = esc(name).replace(/'/g, "\\'");
+
+        html += '<div class="tree-node">';
+        html += '<div class="tree-header">';
+        html += '<span class="' + arrowClass + '" onclick="toggleTreeNode(\'' + safeName + '\')">&#9654;</span>';
+        html += '<span class="node-info" onclick="toggleTreeNode(\'' + safeName + '\')">' + esc(name) + '</span>';
+        html += '<span class="node-count">' + items.length + ' grupo(s) | ' + totalFotos + ' fotos</span>';
+        html += '<div class="tree-actions">';
+        html += '<button class="tree-btn" onclick="abrirEditPacienteGrupo(\'' + safeName + '\')" title="Editar paciente">&#9998;</button>';
+        html += '<button class="tree-btn undo" onclick="desfazerTratamentoPaciente(\'' + safeName + '\')" title="Desfazer todos">&#8617;</button>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="' + childClass + '">';
+        for (var j = 0; j < items.length; j++) {
+            html += buildTreatedCard(items[j]);
+        }
+        html += '</div></div>';
+    }
+    return html;
+}
+
+function buildTreatedCard(g) {
+    var isExpanded = expandedTreatedId === g.id;
+    var expandedClass = isExpanded ? ' tc-expanded' : '';
+
+    var html = '<div class="treated-card' + expandedClass + '" onclick="toggleTreatedPreview(' + g.id + ')">';
+
+    // Header row with info + undo button
+    html += '<div class="tc-row">';
+    html += '<div class="tc-info">';
+    html += '<span class="tc-time">Grupo #' + g.id + ' | ' + g.hora + '</span>';
+    html += '<span class="tc-meta"> | ' + g.total_clicks + ' fotos | ' + g.tamanho_str + '</span>';
+    html += '</div>';
+    html += '<div class="tc-actions">';
+    html += '<button class="tc-btn undo" onclick="event.stopPropagation(); desfazerTratamento(' + g.id + ')" title="Desfazer tratamento">&#8617;</button>';
+    html += '</div>';
+    html += '</div>';
+
+    // Etapa tags inline (always visible)
+    html += '<div class="tc-etapas" onclick="event.stopPropagation()">';
+    for (var i = 0; i < configEtapas.length; i++) {
+        var et = configEtapas[i];
+        var active = g.dados_form.etapa === et ? ' active' : '';
+        html += '<span class="tag' + active + '" onclick="setField(' + g.id + ', \'etapa\', \'' + esc(et) + '\')">' + esc(et) + '</span>';
+    }
+    html += '</div>';
+
+    // Preview (expanded)
+    if (isExpanded) {
+        var thumbSrc = g.thumbnail_b64 ? 'data:image/jpeg;base64,' + g.thumbnail_b64 : '';
+        var thumbHtml = thumbSrc
+            ? '<img src="' + thumbSrc + '" alt="preview">'
+            : '<span style="color:#999;font-size:11px">Sem preview</span>';
+
+        html += '<div class="tc-preview" onclick="event.stopPropagation()">';
+        html += '<div class="thumb-section">';
+        html += '<div class="thumb-nav">';
+        html += '<button onclick="mudarFoto(' + g.id + ', -1)">&#8249;</button>';
+        html += '<span class="counter" id="counter-' + g.id + '">' + (g.preview_index + 1) + '/' + g.total_clicks + '</span>';
+        html += '<button onclick="mudarFoto(' + g.id + ', 1)">&#8250;</button>';
+        html += '</div>';
+        html += '<div class="thumb-img" id="thumb-' + g.id + '">' + thumbHtml + '</div>';
+        html += '<div class="rot-buttons">';
+        html += '<button onclick="rotacionar(' + g.id + ', 90)">&#8634;</button>';
+        html += '<button onclick="rotacionar(' + g.id + ', -90)">&#8635;</button>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+function toggleTreatedPreview(gid) {
+    expandedTreatedId = expandedTreatedId === gid ? null : gid;
+    renderGroups();
+}
+
+function toggleTreeNode(name) {
+    treeState[name] = !(treeState[name] !== false);
+    renderGroups();
+}
+
+// ==================== Edit Patient Group (root level) ====================
+var editingPatientName = null;
+
+function abrirEditPacienteGrupo(nomePaciente) {
+    var items = grupos.filter(function(g) { return g.dados_form.paciente === nomePaciente; });
+    if (!items.length) return;
+    editingPatientName = nomePaciente;
+
+    var first = items[0];
+    document.getElementById('editTreatedInfo').innerHTML =
+        '<strong>' + esc(nomePaciente) + '</strong> — ' + items.length + ' grupo(s)';
+
+    document.getElementById('editPaciente').value = nomePaciente;
+    document.getElementById('editProf').value = first.dados_form.prof || '';
+    document.getElementById('editProc').value = first.dados_form.proc || '';
+
+    // Populate datalists
+    document.getElementById('editProfList').innerHTML =
+        configProfessores.map(function(p) { return '<option value="' + esc(p) + '">'; }).join('');
+    document.getElementById('editProcList').innerHTML =
+        configProcedimentos.map(function(p) { return '<option value="' + esc(p) + '">'; }).join('');
+
+    document.getElementById('editTreatedModal').classList.remove('hidden');
+    document.getElementById('editPaciente').focus();
+}
+
+function fecharEditTreated() {
+    document.getElementById('editTreatedModal').classList.add('hidden');
+    editingPatientName = null;
+}
+
+async function salvarEditPacienteGrupo() {
+    if (!editingPatientName) return;
+
+    var paciente = document.getElementById('editPaciente').value.trim();
+    var prof = document.getElementById('editProf').value.trim();
+    var proc = document.getElementById('editProc').value.trim();
+
+    var items = grupos.filter(function(g) { return g.dados_form.paciente === editingPatientName; });
+
+    for (var i = 0; i < items.length; i++) {
+        var g = items[i];
+        g.dados_form.paciente = paciente;
+        g.dados_form.prof = prof;
+        g.dados_form.proc = proc;
+        await py('update_field', g.id, 'paciente', paciente);
+        await py('update_field', g.id, 'prof', prof);
+        await py('update_field', g.id, 'proc', proc);
+    }
+
+    fecharEditTreated();
+    renderGroups();
+    showToast(items.length + ' grupo(s) atualizado(s)', 2000);
+}
+
+// ==================== Undo Treatment (single group) ====================
+async function desfazerTratamento(gid) {
+    var g = grupos.find(function(x) { return x.id === gid; });
+    if (!g) return;
+
+    var name = g.dados_form.paciente;
+    g.dados_form.paciente = '';
+    g.dados_form.prof = '';
+    g.dados_form.proc = '';
+    g.dados_form.etapa = '';
+    g.selecionado = false;
+    if (expandedTreatedId === gid) expandedTreatedId = null;
+
+    await py('update_field', gid, 'paciente', '');
+    await py('update_field', gid, 'prof', '');
+    await py('update_field', gid, 'proc', '');
+    await py('update_field', gid, 'etapa', '');
+
+    renderGroups();
+    showToast('Grupo #' + gid + ' devolvido', 2000);
+}
+
+// ==================== Undo Treatment (all groups of a patient) ====================
+async function desfazerTratamentoPaciente(nomePaciente) {
+    var items = grupos.filter(function(g) { return g.dados_form.paciente === nomePaciente; });
+    if (!items.length) return;
+
+    for (var i = 0; i < items.length; i++) {
+        var g = items[i];
+        g.dados_form.paciente = '';
+        g.dados_form.prof = '';
+        g.dados_form.proc = '';
+        g.dados_form.etapa = '';
+        g.selecionado = false;
+        if (expandedTreatedId === g.id) expandedTreatedId = null;
+
+        await py('update_field', g.id, 'paciente', '');
+        await py('update_field', g.id, 'prof', '');
+        await py('update_field', g.id, 'proc', '');
+        await py('update_field', g.id, 'etapa', '');
+    }
+
+    renderGroups();
+    showToast(items.length + ' grupo(s) de "' + nomePaciente + '" devolvido(s)', 2500);
 }
 
 function buildGroupCard(g) {
@@ -975,7 +1487,11 @@ async function confirmarTratamento() {
         return;
     }
 
+    var selCount = grupos.filter(function(g) { return g.selecionado; }).length;
     fecharTratamentoPopup();
+
+    // Show toast immediately
+    showToast('Aplicando tratamento...');
 
     var result = await py('tratar_selecionados', paciente, prof, proc);
     if (result.grupos) {
@@ -983,8 +1499,18 @@ async function confirmarTratamento() {
         configProfessores = result.professores || configProfessores;
         configProcedimentos = result.procedimentos || configProcedimentos;
         renderGroups();
+        showToast(selCount + ' grupo(s) tratado(s) como "' + paciente + '"', 2500);
         document.getElementById('statusbar').textContent =
             'Tratamento aplicado: ' + paciente + (prof ? ' | Prof. ' + prof : '');
+    }
+}
+
+function showToast(msg, duration) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (duration) {
+        setTimeout(function() { t.classList.remove('show'); }, duration);
     }
 }
 
