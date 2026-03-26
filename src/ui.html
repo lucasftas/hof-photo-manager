@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOF Photo Manager</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    font-size: 13px;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ==================== Sidebar ==================== */
+.sidebar {
+    width: 320px;
+    min-width: 280px;
+    background: #fff;
+    border-right: 1px solid #e0e0e0;
+    padding: 12px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar section {
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.sidebar section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.status-label {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+.status-label.ok { background: #e6f4ea; color: #137333; }
+.status-label.err { background: #fce8e6; color: #c5221f; }
+
+.dest-path {
+    font-size: 11px;
+    color: #666;
+    word-break: break-all;
+    margin-top: 4px;
+}
+
+/* Source tags */
+.fonte-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+}
+.fonte-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: #e8f0fe;
+    color: #1a73e8;
+    border-radius: 12px;
+    font-size: 10px;
+    max-width: 100%;
+    word-break: break-all;
+}
+.fonte-tag .remove-fonte {
+    cursor: pointer;
+    font-weight: bold;
+    color: #999;
+    margin-left: 2px;
+}
+.fonte-tag .remove-fonte:hover { color: #c5221f; }
+
+/* Buttons */
+.sidebar .btn-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+.sidebar button {
+    width: 100%;
+    padding: 7px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+}
+.sidebar button:hover { background: #f5f5f5; }
+.sidebar button.primary {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    font-weight: 600;
+}
+.sidebar button.primary:hover { background: #0056b3; }
+.sidebar button.primary:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+.sidebar button.danger {
+    background: #fff;
+    color: #c5221f;
+    border-color: #c5221f;
+}
+.sidebar button.danger:hover { background: #fce8e6; }
+.sidebar button.danger:disabled {
+    color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+.sidebar .summary {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #007bff;
+    padding: 4px;
+}
+
+.sidebar .form-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sidebar .form-row label {
+    width: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+}
+.sidebar .form-row select {
+    flex: 1;
+    padding: 4px 6px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 12px;
+    outline: none;
+}
+
+/* Tooltip */
+[data-tooltip] {
+    position: relative;
+}
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: #333;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: normal;
+    width: 220px;
+    text-align: center;
+    z-index: 50;
+    pointer-events: none;
+}
+
+/* ==================== Groups Panel ==================== */
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.groups-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+}
+
+/* Bottom bar (view controls) */
+.bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 16px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #666;
+    flex-shrink: 0;
+}
+.bottom-bar .view-btns {
+    display: flex;
+    gap: 4px;
+}
+.bottom-bar button {
+    padding: 2px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 11px;
+}
+.bottom-bar button:hover { background: #f0f0f0; }
+
+/* ==================== Day header ==================== */
+.day-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    margin: 12px 0 6px;
+    background: #e8eaed;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #444;
+}
+.day-header:first-child { margin-top: 0; }
+
+/* ==================== Group Card ==================== */
+.group-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.group-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.group-card.selected { border-color: #007bff; border-width: 2px; }
+.group-card.treated { border-left: 4px solid #137333; }
+
+.group-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+.group-header input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+}
+.group-header .info {
+    flex: 1;
+    font-weight: 600;
+    font-size: 12px;
+}
+.group-header .info span {
+    font-weight: 400;
+    color: #666;
+    font-size: 11px;
+}
+.group-header .info .badge {
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+.badge.paciente { background: #e6f4ea; color: #137333; }
+.badge.prof { background: #e8f0fe; color: #1a73e8; }
+.badge.etapa { background: #fef7e0; color: #b06000; }
+.group-header .info .fonte-line {
+    display: block;
+    font-weight: 400;
+    color: #aaa;
+    font-size: 10px;
+    margin-top: 1px;
+}
+.group-header .toggle-btn {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+.group-header .toggle-btn:hover { background: #f0f0f0; }
+
+.group-body {
+    display: flex;
+    padding: 0 10px 10px;
+    gap: 10px;
+}
+.group-body.hidden { display: none; }
+
+/* Thumbnail */
+.thumb-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.thumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.thumb-nav button {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+}
+.thumb-nav button:hover { background: #f0f0f0; }
+.thumb-nav .counter { font-size: 10px; color: #888; min-width: 36px; text-align: center; }
+
+.thumb-img {
+    width: 130px;
+    height: 130px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.thumb-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.rot-buttons {
+    display: flex;
+    gap: 3px;
+}
+.rot-buttons button {
+    padding: 1px 8px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+}
+.rot-buttons button:hover { background: #f0f0f0; }
+
+/* Etapa tags in body */
+.form-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+.tags-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tags-row label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+}
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+    background: #e8eaed;
+    color: #444;
+}
+.tag:hover { background: #d0d4d8; }
+.tag.active { background: #007bff; color: #fff; }
+
+/* ==================== Modals ==================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 520px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.modal h3 {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+}
+.modal .modal-body {
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.modal .modal-body .form-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.modal .modal-body .form-row label {
+    width: 90px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+}
+.modal .modal-body .form-row input,
+.modal .modal-body .form-row select {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+}
+.modal .modal-body .form-row input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+}
+.modal .merge-info {
+    font-size: 11px;
+    color: #666;
+    background: #f5f5f5;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+.modal .modal-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.modal .modal-footer button {
+    padding: 7px 20px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+}
+.modal .modal-footer button.primary {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    font-weight: 600;
+}
+.modal .modal-footer button.primary:hover { background: #0056b3; }
+
+/* Progress */
+.modal .progress-bar-wrap { padding: 10px 20px; }
+.modal .progress-bar {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.modal .progress-bar .fill {
+    height: 100%;
+    background: #007bff;
+    width: 0%;
+    transition: width 0.2s;
+}
+.modal .log-area {
+    flex: 1;
+    padding: 0 20px;
+    overflow-y: auto;
+    max-height: 280px;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.modal .log-area .ok { color: #137333; }
+.modal .log-area .err { color: #c5221f; }
+
+/* ==================== Empty State ==================== */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    gap: 8px;
+}
+.empty-state p { font-size: 13px; }
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+</style>
+</head>
+<body>
+
+<div class="app">
+    <div class="main">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- 1. Origem -->
+            <section>
+                <h3>1. Origem</h3>
+                <div class="btn-row">
+                    <button onclick="detectarCartoes()" style="flex:1">Detectar Cartao</button>
+                    <button onclick="adicionarPasta()" style="flex:1">Pasta Manual</button>
+                </div>
+                <div id="fontesTags" class="fonte-tags"></div>
+                <span id="srcStatus" class="status-label err" style="margin-top:6px">Nenhuma fonte</span>
+                <button id="btnAnalisar" class="primary" disabled onclick="iniciarAnalise()" style="margin-top:6px">ANALISAR FOTOS</button>
+            </section>
+
+            <!-- 2. Destino -->
+            <section>
+                <h3>2. Destino</h3>
+                <div id="destPath" class="dest-path">Nenhum destino definido</div>
+                <button onclick="selecionarDestino()">Alterar Destino</button>
+            </section>
+
+            <!-- 3. Filtros -->
+            <section>
+                <h3>3. Filtros</h3>
+                <div class="form-row">
+                    <label>De</label>
+                    <select id="dateFrom"><option>--</option></select>
+                </div>
+                <div class="form-row" style="margin-top:4px">
+                    <label>Ate</label>
+                    <select id="dateTo"><option>--</option></select>
+                </div>
+                <div class="btn-row" style="margin-top:4px">
+                    <button onclick="aplicarFiltro()" style="flex:1">Aplicar</button>
+                    <button onclick="limparFiltro()" style="flex:1">Limpar</button>
+                </div>
+            </section>
+
+            <!-- 4. Tratamento -->
+            <section>
+                <h3>4. Tratamento</h3>
+                <button onclick="abrirTratamentoPopup()" id="btnTratar" disabled>Tratar Grupos Selecionados</button>
+                <div id="summary" class="summary" style="margin-top:4px">0 selecionados</div>
+            </section>
+
+            <!-- 5. Processamento -->
+            <section>
+                <h3>5. Processamento</h3>
+                <button onclick="iniciarProcessamento()" id="btnProcessar" class="primary" disabled
+                    data-tooltip="Copia os grupos tratados (com paciente preenchido) para a pasta destino, organizando por Professor / Paciente / Procedimento / Etapa">
+                    Iniciar Copia
+                </button>
+                <button onclick="moverParaLixo()" id="btnLixo" class="danger" disabled style="margin-top:4px"
+                    data-tooltip="Move os arquivos originais dos grupos tratados para uma pasta escolhida, permitindo liberar espaco no cartao">
+                    Mover para Lixo
+                </button>
+                <div id="tratadosInfo" style="font-size:11px;color:#666;margin-top:4px;text-align:center"></div>
+            </section>
+        </div>
+
+        <!-- Content -->
+        <div class="content-area">
+            <div class="groups-panel" id="groupsPanel">
+                <div class="empty-state">
+                    <p>Detecte cartoes ou adicione uma pasta para comecar</p>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="bottom-bar">
+                <span id="statusbar">Pronto</span>
+                <div class="view-btns">
+                    <button onclick="expandirTodos()">Expandir todos</button>
+                    <button onclick="minimizarTodos()">Minimizar todos</button>
+                    <button onclick="mostrarEstatisticas()">Estatisticas</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tratamento Modal -->
+    <div class="modal-overlay hidden" id="tratamentoModal">
+        <div class="modal">
+            <h3>Tratar Grupos - Mesma Paciente</h3>
+            <div class="modal-body">
+                <div class="merge-info" id="tratamentoInfo"></div>
+                <div class="form-row">
+                    <label>Paciente</label>
+                    <input type="text" id="tratPaciente" placeholder="Nome da paciente...">
+                </div>
+                <div class="form-row">
+                    <label>Professor</label>
+                    <input type="text" id="tratProf" list="profList" placeholder="Digite ou selecione...">
+                    <datalist id="profList"></datalist>
+                </div>
+                <div class="form-row">
+                    <label>Procedimento</label>
+                    <input type="text" id="tratProc" list="procList" placeholder="Digite ou selecione...">
+                    <datalist id="procList"></datalist>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharTratamentoPopup()">Cancelar</button>
+                <button class="primary" onclick="confirmarTratamento()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal-overlay hidden" id="progressModal">
+        <div class="modal">
+            <h3 id="progressTitle">Processando...</h3>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+            </div>
+            <div class="log-area" id="logArea"></div>
+            <div class="modal-footer">
+                <button onclick="cancelarProcesso()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== State ====================
+let grupos = [];
+let configProfessores = [];
+let configProcedimentos = [];
+let configEtapas = [];
+let progressTotal = 0;
+let progressCurrent = 0;
+
+// ==================== Python Bridge ====================
+async function py(method, ...args) {
+    return await window.pywebview.api[method](...args);
+}
+
+// ==================== Init ====================
+window.addEventListener('pywebviewready', async function() {
+    const state = await py('get_initial_state');
+    if (state.dest_dir) {
+        document.getElementById('destPath').textContent = state.dest_dir;
+    }
+    if (state.fontes_count > 0) {
+        updateSrcStatus({ count: state.fontes_count, paths: state.fontes_paths });
+    }
+    configProfessores = state.professores || [];
+    configProcedimentos = state.procedimentos || [];
+    configEtapas = state.etapas || [];
+    checkReady();
+});
+
+// ==================== Fontes ====================
+async function detectarCartoes() {
+    document.getElementById('statusbar').textContent = 'Detectando cartoes...';
+    const result = await py('detectar_cartoes');
+    updateSrcStatus(result);
+    document.getElementById('statusbar').textContent = result.count > 0
+        ? result.count + ' fontes detectadas'
+        : 'Nenhum cartao encontrado';
+}
+
+async function adicionarPasta() {
+    const result = await py('adicionar_pasta');
+    updateSrcStatus(result);
+}
+
+function updateSrcStatus(result) {
+    const el = document.getElementById('srcStatus');
+    const tagsEl = document.getElementById('fontesTags');
+
+    if (result.count > 0) {
+        el.textContent = result.count + ' fonte(s)';
+        el.className = 'status-label ok';
+        // Render path tags
+        tagsEl.innerHTML = (result.paths || []).map(function(p, i) {
+            return '<span class="fonte-tag">' + esc(p) +
+                '<span class="remove-fonte" onclick="removerFonte(' + i + ')">&times;</span></span>';
+        }).join('');
+    } else {
+        el.textContent = 'Nenhuma fonte';
+        el.className = 'status-label err';
+        tagsEl.innerHTML = '';
+    }
+    checkReady();
+}
+
+async function removerFonte(index) {
+    const result = await py('remover_fonte', index);
+    updateSrcStatus(result);
+}
+
+async function selecionarDestino() {
+    const result = await py('selecionar_destino');
+    if (result.path) {
+        document.getElementById('destPath').textContent = result.path;
+        checkReady();
+    }
+}
+
+function checkReady() {
+    const hasSrc = !document.getElementById('srcStatus').classList.contains('err');
+    const hasDest = document.getElementById('destPath').textContent !== 'Nenhum destino definido';
+    document.getElementById('btnAnalisar').disabled = !hasSrc;
+
+    // Processamento needs dest + treated groups
+    const treatedCount = grupos.filter(function(g) { return g.dados_form.paciente; }).length;
+    document.getElementById('btnProcessar').disabled = !(hasDest && treatedCount > 0);
+    document.getElementById('btnLixo').disabled = treatedCount === 0;
+    document.getElementById('tratadosInfo').textContent = treatedCount > 0
+        ? treatedCount + ' grupo(s) tratado(s), pronto(s) para processar'
+        : '';
+}
+
+// ==================== Analysis ====================
+async function iniciarAnalise() {
+    document.getElementById('btnAnalisar').disabled = true;
+    document.getElementById('statusbar').textContent = 'Analisando arquivos... aguarde.';
+
+    const result = await py('iniciar_analise');
+
+    if (result.error) {
+        alert(result.error);
+    } else if (result.grupos) {
+        grupos = result.grupos;
+        configProfessores = result.professores || configProfessores;
+        configProcedimentos = result.procedimentos || configProcedimentos;
+        configEtapas = result.etapas || configEtapas;
+        populateDateFilters(result.datas);
+        renderGroups();
+        document.getElementById('btnTratar').disabled = false;
+        document.getElementById('statusbar').textContent = 'Analise concluida: ' + grupos.length + ' grupos encontrados.';
+    }
+    document.getElementById('btnAnalisar').disabled = false;
+    checkReady();
+}
+
+// ==================== Render Groups ====================
+function renderGroups(filterFrom, filterTo) {
+    const panel = document.getElementById('groupsPanel');
+    panel.innerHTML = '';
+
+    if (!grupos.length) {
+        panel.innerHTML = '<div class="empty-state"><p>Nenhum grupo encontrado</p></div>';
+        return;
+    }
+
+    var lastMarker = '';
+    for (var i = 0; i < grupos.length; i++) {
+        var g = grupos[i];
+        if (filterFrom && filterTo) {
+            var gDate = new Date(g.inicio_iso);
+            if (gDate < filterFrom || gDate > filterTo) continue;
+        }
+
+        var marker = g.data_formatada + ' - ' + g.periodo;
+        if (marker !== lastMarker) {
+            panel.innerHTML += '<div class="day-header">' + marker + '</div>';
+            lastMarker = marker;
+        }
+        panel.innerHTML += buildGroupCard(g);
+    }
+
+    updateSummary();
+    checkReady();
+}
+
+function buildGroupCard(g) {
+    var selectedClass = g.selecionado ? ' selected' : '';
+    var treatedClass = g.dados_form.paciente ? ' treated' : '';
+    var bodyClass = g.minimized ? ' hidden' : '';
+
+    // Etapa tags
+    var etapaTagsHtml = '';
+    for (var i = 0; i < configEtapas.length; i++) {
+        var et = configEtapas[i];
+        var active = g.dados_form.etapa === et ? ' active' : '';
+        etapaTagsHtml += '<span class="tag' + active + '" onclick="setField(' + g.id + ', \'etapa\', \'' + esc(et) + '\')">' + esc(et) + '</span>';
+    }
+
+    var thumbSrc = g.thumbnail_b64 ? 'data:image/jpeg;base64,' + g.thumbnail_b64 : '';
+    var thumbHtml = thumbSrc
+        ? '<img src="' + thumbSrc + '" alt="preview">'
+        : '<span style="color:#999;font-size:11px">Sem preview</span>';
+
+    // Badges
+    var badges = '';
+    if (g.dados_form.paciente) badges += '<span class="badge paciente">' + esc(g.dados_form.paciente) + '</span>';
+    if (g.dados_form.prof) badges += '<span class="badge prof">' + esc(g.dados_form.prof) + '</span>';
+    if (g.dados_form.etapa) badges += '<span class="badge etapa">' + esc(g.dados_form.etapa) + '</span>';
+
+    var fonteLine = g.fonte_path ? '<span class="fonte-line">' + esc(g.fonte_path) + '</span>' : '';
+
+    return '<div class="group-card' + selectedClass + treatedClass + '" id="group-' + g.id + '">' +
+        '<div class="group-header">' +
+            '<input type="checkbox" ' + (g.selecionado ? 'checked' : '') +
+                ' onchange="toggleSelect(' + g.id + ', this.checked)">' +
+            '<div class="info">' +
+                'Grupo #' + g.id + ' <span>| ' + g.hora + ' | ' + g.total_clicks + ' fotos | ' + g.tamanho_str + '</span>' +
+                badges + fonteLine +
+            '</div>' +
+            '<button class="toggle-btn" onclick="toggleMinimize(' + g.id + ')">' +
+                (g.minimized ? '+' : '-') +
+            '</button>' +
+        '</div>' +
+        '<div class="group-body' + bodyClass + '">' +
+            '<div class="thumb-section">' +
+                '<div class="thumb-nav">' +
+                    '<button onclick="mudarFoto(' + g.id + ', -1)">&#8249;</button>' +
+                    '<span class="counter" id="counter-' + g.id + '">' + (g.preview_index + 1) + '/' + g.total_clicks + '</span>' +
+                    '<button onclick="mudarFoto(' + g.id + ', 1)">&#8250;</button>' +
+                '</div>' +
+                '<div class="thumb-img" id="thumb-' + g.id + '">' + thumbHtml + '</div>' +
+                '<div class="rot-buttons">' +
+                    '<button onclick="rotacionar(' + g.id + ', 90)">&#8634;</button>' +
+                    '<button onclick="rotacionar(' + g.id + ', -90)">&#8635;</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="form-section">' +
+                '<div class="tags-row">' +
+                    '<label>Etapa</label>' +
+                    '<div class="tags-container">' + etapaTagsHtml + '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+}
+
+// ==================== Field Actions ====================
+function setField(gid, key, value) {
+    var g = grupos.find(function(x) { return x.id === gid; });
+    if (!g) return;
+    g.dados_form[key] = value;
+    renderGroups();
+    py('update_field', gid, key, value);
+}
+
+// ==================== Group Actions ====================
+function toggleSelect(gid, checked) {
+    var g = grupos.find(function(x) { return x.id === gid; });
+    if (!g) return;
+    g.selecionado = checked;
+    var card = document.getElementById('group-' + gid);
+    if (card) card.classList.toggle('selected', checked);
+    py('toggle_select', gid, checked);
+    updateSummary();
+}
+
+function toggleMinimize(gid) {
+    var g = grupos.find(function(x) { return x.id === gid; });
+    if (!g) return;
+    g.minimized = !g.minimized;
+    renderGroups();
+}
+
+async function mudarFoto(gid, delta) {
+    var result = await py('mudar_foto', gid, delta);
+    if (result) {
+        var g = grupos.find(function(x) { return x.id === gid; });
+        if (g) {
+            g.preview_index = result.index;
+            g.thumbnail_b64 = result.thumbnail_b64;
+            var el = document.getElementById('thumb-' + gid);
+            if (el && result.thumbnail_b64) {
+                el.innerHTML = '<img src="data:image/jpeg;base64,' + result.thumbnail_b64 + '">';
+            }
+            var counter = document.getElementById('counter-' + gid);
+            if (counter) counter.textContent = (result.index + 1) + '/' + g.total_clicks;
+        }
+    }
+}
+
+async function rotacionar(gid, delta) {
+    var result = await py('rotacionar', gid, delta);
+    if (result && result.thumbnail_b64) {
+        var el = document.getElementById('thumb-' + gid);
+        if (el) el.innerHTML = '<img src="data:image/jpeg;base64,' + result.thumbnail_b64 + '">';
+    }
+}
+
+// ==================== Tratamento Popup ====================
+function abrirTratamentoPopup() {
+    var sels = grupos.filter(function(g) { return g.selecionado; });
+    if (sels.length < 1) {
+        alert('Selecione pelo menos 1 grupo para tratar.');
+        return;
+    }
+
+    var info = sels.map(function(g) {
+        return 'Grupo #' + g.id + ' (' + g.hora + ', ' + g.total_clicks + ' fotos)';
+    }).join('<br>');
+    document.getElementById('tratamentoInfo').innerHTML =
+        '<strong>' + sels.length + ' grupo(s) selecionado(s):</strong><br>' + info;
+
+    // Populate datalists
+    document.getElementById('profList').innerHTML =
+        configProfessores.map(function(p) { return '<option value="' + esc(p) + '">'; }).join('');
+    document.getElementById('procList').innerHTML =
+        configProcedimentos.map(function(p) { return '<option value="' + esc(p) + '">'; }).join('');
+
+    // Pre-fill from first group that has data
+    var withData = sels.find(function(s) { return s.dados_form.paciente; });
+    document.getElementById('tratPaciente').value = withData ? withData.dados_form.paciente : '';
+    document.getElementById('tratProf').value = withData ? withData.dados_form.prof : '';
+    document.getElementById('tratProc').value = withData ? withData.dados_form.proc : '';
+
+    document.getElementById('tratamentoModal').classList.remove('hidden');
+    document.getElementById('tratPaciente').focus();
+}
+
+function fecharTratamentoPopup() {
+    document.getElementById('tratamentoModal').classList.add('hidden');
+}
+
+async function confirmarTratamento() {
+    var paciente = document.getElementById('tratPaciente').value.trim();
+    var prof = document.getElementById('tratProf').value.trim();
+    var proc = document.getElementById('tratProc').value.trim();
+
+    if (!paciente) {
+        alert('Informe o nome da paciente.');
+        return;
+    }
+
+    fecharTratamentoPopup();
+
+    var result = await py('tratar_selecionados', paciente, prof, proc);
+    if (result.grupos) {
+        grupos = result.grupos;
+        configProfessores = result.professores || configProfessores;
+        configProcedimentos = result.procedimentos || configProcedimentos;
+        renderGroups();
+        document.getElementById('statusbar').textContent =
+            'Tratamento aplicado: ' + paciente + (prof ? ' | Prof. ' + prof : '');
+    }
+}
+
+// ==================== View ====================
+function expandirTodos() {
+    for (var i = 0; i < grupos.length; i++) grupos[i].minimized = false;
+    renderGroups();
+}
+function minimizarTodos() {
+    for (var i = 0; i < grupos.length; i++) grupos[i].minimized = true;
+    renderGroups();
+}
+
+function updateSummary() {
+    var sels = grupos.filter(function(g) { return g.selecionado; });
+    var bytes = sels.reduce(function(acc, g) { return acc + g.tamanho_bytes; }, 0);
+    var gb = (bytes / (1024*1024*1024)).toFixed(2);
+    document.getElementById('summary').textContent =
+        sels.length + ' selecionado(s)' + (bytes > 0 ? ' (' + gb + ' GB)' : '');
+}
+
+async function mostrarEstatisticas() {
+    var result = await py('get_estatisticas');
+    if (result) alert(result);
+}
+
+// ==================== Filters ====================
+function populateDateFilters(datas) {
+    var from = document.getElementById('dateFrom');
+    var to = document.getElementById('dateTo');
+    from.innerHTML = '';
+    to.innerHTML = '';
+    for (var i = 0; i < datas.length; i++) {
+        from.innerHTML += '<option value="' + datas[i] + '">' + datas[i] + '</option>';
+        to.innerHTML += '<option value="' + datas[i] + '">' + datas[i] + '</option>';
+    }
+    if (datas.length) to.value = datas[datas.length - 1];
+}
+
+function aplicarFiltro() {
+    var from = parseDate(document.getElementById('dateFrom').value);
+    var to = parseDate(document.getElementById('dateTo').value);
+    if (from && to) {
+        to.setHours(23, 59, 59);
+        renderGroups(from > to ? to : from, from > to ? from : to);
+    }
+}
+function limparFiltro() { renderGroups(); }
+
+function parseDate(s) {
+    if (!s || s === '--') return null;
+    var parts = s.split('/');
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+// ==================== Processamento ====================
+async function iniciarProcessamento() {
+    var result = await py('iniciar_processamento');
+    if (result.error) { alert(result.error); return; }
+    if (!result.total) { alert('Nenhum grupo tratado para copiar.'); return; }
+
+    progressTotal = result.total;
+    progressCurrent = 0;
+    document.getElementById('progressTitle').textContent = 'Copiando arquivos...';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('logArea').innerHTML = '';
+    document.getElementById('progressModal').classList.remove('hidden');
+
+    pollProgress();
+}
+
+async function moverParaLixo() {
+    var treatedCount = grupos.filter(function(g) { return g.dados_form.paciente; }).length;
+    if (treatedCount === 0) {
+        alert('Nenhum grupo tratado para mover.');
+        return;
+    }
+
+    var result = await py('mover_para_lixo');
+    if (result.error) { alert(result.error); return; }
+    if (!result.total) return;
+
+    progressTotal = result.total;
+    progressCurrent = 0;
+    document.getElementById('progressTitle').textContent = 'Movendo para lixo...';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('logArea').innerHTML = '';
+    document.getElementById('progressModal').classList.remove('hidden');
+
+    pollProgress();
+}
+
+async function pollProgress() {
+    var msgs = await py('poll_progress');
+    if (!msgs) return;
+
+    var logArea = document.getElementById('logArea');
+    for (var i = 0; i < msgs.length; i++) {
+        var m = msgs[i];
+        if (m.type === 'log') {
+            logArea.innerHTML += '<div class="' + m.tag + '">' + esc(m.msg) + '</div>';
+            logArea.scrollTop = logArea.scrollHeight;
+        } else if (m.type === 'progress') {
+            progressCurrent += m.step;
+            var pct = progressTotal > 0 ? (progressCurrent / progressTotal * 100) : 0;
+            document.getElementById('progressFill').style.width = pct + '%';
+        } else if (m.type === 'done') {
+            alert('Concluido.\nSucesso: ' + m.sucesso + '\nErros: ' + m.erros);
+            document.getElementById('progressModal').classList.add('hidden');
+            return;
+        }
+    }
+    setTimeout(pollProgress, 150);
+}
+
+async function cancelarProcesso() {
+    await py('cancelar_processo');
+}
+
+// ==================== Helpers ====================
+function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>

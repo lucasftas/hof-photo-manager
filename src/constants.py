@@ -57,6 +57,13 @@ THEME: dict[str, str] = {
     "fg_folder": "blue",
     "fg_muted": "gray",
     "fg_missing": "red",
+    # Tags
+    "tag_bg_session": "#007bff",
+    "tag_fg_session": "white",
+    "tag_bg_config": "#e0e0e0",
+    "tag_fg_config": "#333",
+    "tag_bg_selected": "#0056b3",
+    "tag_fg_selected": "white",
 }
 
 
