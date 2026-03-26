@@ -2,6 +2,18 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas aqui.
 
+## [0.4.0] — 2026-03-26 — Sessao Persistente + Confirmacao de Copia
+
+### Adicionado
+- Modal de boas-vindas ao abrir o app com caminhos da sessao anterior
+- Persistencia das pastas de origem entre sessoes (`last_fontes` na config)
+- Botao "Adicionar / Alterar Origem" no modal de startup
+- Modal de confirmacao antes de iniciar copia (mostra destino, permite alterar)
+- Analise automatica ao clicar "Continuar" no startup
+- Dialogos de pasta abrem no ultimo caminho usado
+
+---
+
 ## [0.3.1] — 2026-03-26
 
 ### Adicionado
