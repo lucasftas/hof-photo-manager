@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas aqui.
 
+## [0.3.1] — 2026-03-26
+
+### Adicionado
+- Auto-sugestao de etapa ao selecionar grupos: "Pre" para o mais antigo, "Pos imediato" para o mais recente
+- Validacao obrigatoria de etapa ao confirmar tratamento
+
+---
+
 ## [0.3.0] — 2026-03-26 — PyWebView + UX Tratados
 
 ### Adicionado
