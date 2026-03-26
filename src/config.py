@@ -27,6 +27,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "Face Lift (Ritidoplastia)", "Blefaroplastia",
     ],
     "last_dest_dir": "",
+    "last_fontes": [],
     "last_rotation": 0,
 }
 
@@ -35,6 +36,7 @@ _EXPECTED_KEYS: dict[str, type] = {
     "etapas": list,
     "procedimentos": list,
     "last_dest_dir": str,
+    "last_fontes": list,
     "last_rotation": int,
 }
 

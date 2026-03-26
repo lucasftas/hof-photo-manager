@@ -409,6 +409,43 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
+/* Startup modal path items */
+.startup-path {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 12px;
+    word-break: break-all;
+}
+.startup-path .sp-label {
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+    width: 55px;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+.startup-path .sp-value {
+    flex: 1;
+    color: #333;
+    min-width: 0;
+}
+.startup-path .sp-value.empty { color: #999; font-style: italic; }
+.startup-path .sp-change {
+    padding: 3px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.startup-path .sp-change:hover { background: #f0f0f0; }
+
 /* Bottom bar (view controls) */
 .bottom-bar {
     display: flex;
@@ -838,6 +875,26 @@ body {
         </div>
     </div>
 
+    <!-- Startup Modal -->
+    <div class="modal-overlay hidden" id="startupModal">
+        <div class="modal">
+            <h3>HOF Photo Manager</h3>
+            <div class="modal-body">
+                <div class="merge-info">Caminhos da sessao anterior. Use-os ou altere antes de comecar.</div>
+                <div id="startupOrigens"></div>
+                <div class="startup-path" style="margin-top:4px">
+                    <span class="sp-label">Destino</span>
+                    <span class="sp-value" id="startupDest"></span>
+                    <button class="sp-change" onclick="startupAlterarDestino()">Alterar</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="startupNovaSessao()">Nova Sessao</button>
+                <button class="primary" onclick="startupContinuar()">Continuar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tratamento Modal -->
     <div class="modal-overlay hidden" id="tratamentoModal">
         <div class="modal">
@@ -897,6 +954,25 @@ body {
         </div>
     </div>
 
+    <!-- Confirm Copy Modal -->
+    <div class="modal-overlay hidden" id="confirmCopyModal">
+        <div class="modal">
+            <h3>Confirmar Destino da Copia</h3>
+            <div class="modal-body">
+                <div class="merge-info" id="confirmCopyInfo"></div>
+                <div class="form-row">
+                    <label>Destino</label>
+                    <input type="text" id="confirmCopyPath" readonly style="background:#f5f5f5;cursor:default">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharConfirmCopy()">Cancelar</button>
+                <button onclick="alterarDestinoECopiar()">Alterar Destino</button>
+                <button class="primary" onclick="executarCopia()">Iniciar Copia</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Progress Modal -->
     <div class="modal-overlay hidden" id="progressModal">
         <div class="modal">
@@ -942,12 +1018,23 @@ window.addEventListener('pywebviewready', async function() {
     configProcedimentos = state.procedimentos || [];
     configEtapas = state.etapas || [];
     checkReady();
+
+    // Show startup modal if we have saved paths
+    setTimeout(function() { mostrarStartupModal(state); }, 200);
 });
 
 // ==================== ESC deselects ====================
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         // Close modals if open
+        if (!document.getElementById('startupModal').classList.contains('hidden')) {
+            startupContinuar();
+            return;
+        }
+        if (!document.getElementById('confirmCopyModal').classList.contains('hidden')) {
+            fecharConfirmCopy();
+            return;
+        }
         if (!document.getElementById('editTreatedModal').classList.contains('hidden')) {
             fecharEditTreated();
             return;
@@ -1549,6 +1636,99 @@ function showToast(msg, duration) {
     }
 }
 
+// ==================== Startup Modal ====================
+function mostrarStartupModal(state) {
+    var hasOrigens = state.fontes_count > 0;
+    var hasDest = !!state.dest_dir;
+
+    // If no saved paths, go straight to folder picker
+    if (!hasOrigens && !hasDest) {
+        adicionarPasta();
+        return;
+    }
+
+    // Render origin paths
+    var origensEl = document.getElementById('startupOrigens');
+    var paths = state.fontes_paths || [];
+    if (paths.length > 0) {
+        origensEl.innerHTML = paths.map(function(p, i) {
+            return '<div class="startup-path" style="margin-bottom:4px">' +
+                '<span class="sp-label">Origem ' + (paths.length > 1 ? (i + 1) : '') + '</span>' +
+                '<span class="sp-value">' + esc(p) + '</span>' +
+                '</div>';
+        }).join('');
+    } else {
+        origensEl.innerHTML = '<div class="startup-path"><span class="sp-label">Origem</span>' +
+            '<span class="sp-value empty">Nenhuma fonte salva</span></div>';
+    }
+    origensEl.innerHTML += '<button onclick="startupAdicionarOrigem()" style="margin-top:4px;width:100%;padding:7px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;font-size:12px">Adicionar / Alterar Origem</button>';
+
+    // Dest
+    var destEl = document.getElementById('startupDest');
+    if (hasDest) {
+        destEl.textContent = state.dest_dir;
+        destEl.className = 'sp-value';
+    } else {
+        destEl.textContent = 'Nenhum destino definido';
+        destEl.className = 'sp-value empty';
+    }
+
+    document.getElementById('startupModal').classList.remove('hidden');
+}
+
+function startupContinuar() {
+    var hasSrc = document.getElementById('srcStatus').classList.contains('ok');
+    if (!hasSrc) {
+        alert('Defina pelo menos uma pasta de origem antes de continuar.');
+        return;
+    }
+    document.getElementById('startupModal').classList.add('hidden');
+    iniciarAnalise();
+}
+
+async function startupNovaSessao() {
+    document.getElementById('startupModal').classList.add('hidden');
+
+    // Clear sources
+    var count = grupos.length;
+    for (var i = (await py('get_initial_state')).fontes_paths.length - 1; i >= 0; i--) {
+        await py('remover_fonte', 0);
+    }
+    updateSrcStatus({ count: 0, paths: [] });
+
+    // Open folder picker for new source
+    var result = await py('adicionar_pasta');
+    updateSrcStatus(result);
+}
+
+async function startupAdicionarOrigem() {
+    var result = await py('adicionar_pasta');
+    updateSrcStatus(result);
+    if (result.count > 0) {
+        // Refresh the startup modal with new paths
+        var state = await py('get_initial_state');
+        var origensEl = document.getElementById('startupOrigens');
+        var paths = state.fontes_paths || [];
+        origensEl.innerHTML = paths.map(function(p, i) {
+            return '<div class="startup-path" style="margin-bottom:4px">' +
+                '<span class="sp-label">Origem ' + (paths.length > 1 ? (i + 1) : '') + '</span>' +
+                '<span class="sp-value">' + esc(p) + '</span>' +
+                '</div>';
+        }).join('');
+        origensEl.innerHTML += '<button onclick="startupAdicionarOrigem()" style="margin-top:4px;width:100%;padding:7px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;font-size:12px">Adicionar / Alterar Origem</button>';
+    }
+}
+
+async function startupAlterarDestino() {
+    var result = await py('selecionar_destino');
+    if (result.path) {
+        document.getElementById('startupDest').textContent = result.path;
+        document.getElementById('startupDest').className = 'sp-value';
+        document.getElementById('destPath').textContent = result.path;
+        checkReady();
+    }
+}
+
 // ==================== View ====================
 function expandirTodos() {
     for (var i = 0; i < grupos.length; i++) grupos[i].minimized = false;
@@ -1603,6 +1783,38 @@ function parseDate(s) {
 
 // ==================== Processamento ====================
 async function iniciarProcessamento() {
+    var treatedCount = grupos.filter(function(g) { return g.dados_form.paciente; }).length;
+    var totalFotos = grupos.filter(function(g) { return g.dados_form.paciente; })
+        .reduce(function(acc, g) { return acc + g.total_fotos; }, 0);
+    var destPath = document.getElementById('destPath').textContent;
+
+    if (treatedCount === 0) { alert('Nenhum grupo tratado para copiar.'); return; }
+    if (destPath === 'Nenhum destino definido') { alert('Defina um destino primeiro.'); return; }
+
+    document.getElementById('confirmCopyInfo').innerHTML =
+        '<strong>' + treatedCount + ' grupo(s)</strong> tratado(s) | <strong>' + totalFotos + ' fotos</strong> serao copiadas';
+    document.getElementById('confirmCopyPath').value = destPath;
+    document.getElementById('confirmCopyModal').classList.remove('hidden');
+}
+
+function fecharConfirmCopy() {
+    document.getElementById('confirmCopyModal').classList.add('hidden');
+}
+
+async function alterarDestinoECopiar() {
+    fecharConfirmCopy();
+    var result = await py('selecionar_destino');
+    if (result.path) {
+        document.getElementById('destPath').textContent = result.path;
+        checkReady();
+        // Re-open confirmation with new path
+        iniciarProcessamento();
+    }
+}
+
+async function executarCopia() {
+    fecharConfirmCopy();
+
     var result = await py('iniciar_processamento');
     if (result.error) { alert(result.error); return; }
     if (!result.total) { alert('Nenhum grupo tratado para copiar.'); return; }

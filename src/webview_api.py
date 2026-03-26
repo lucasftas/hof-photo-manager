@@ -49,7 +49,7 @@ class Api:
         self.config: dict[str, Any] = ConfigManager.load()
         self.grupos_pacientes: list[GrupoPaciente] = []
         self._grupos_por_id: dict[int, GrupoPaciente] = {}
-        self.fontes_origem: list[str] = []
+        self.fontes_origem: list[str] = list(self.config.get("last_fontes", []))
         self.dest_dir: str = self.config.get("last_dest_dir", "")
         self.stop_event = threading.Event()
         self._ui_queue: Queue[dict[str, Any]] = Queue()
@@ -71,18 +71,24 @@ class Api:
         }
 
     # ---------------------------------------------------------- Fontes
+    def _save_fontes(self) -> None:
+        self.config["last_fontes"] = list(self.fontes_origem)
+        ConfigManager.save(self.config)
+
     def detectar_cartoes(self) -> dict:
         drives = detectar_cartoes_sd()
         for d in drives:
             if d not in self.fontes_origem:
                 self.fontes_origem.append(d)
+        self._save_fontes()
         return {"count": len(self.fontes_origem), "paths": list(self.fontes_origem)}
 
     def adicionar_pasta(self) -> dict:
         w = self._window
         if not w:
             return {"count": len(self.fontes_origem), "paths": list(self.fontes_origem)}
-        result = w.create_file_dialog(dialog_type=20)  # FOLDER_DIALOG
+        start = self.fontes_origem[-1] if self.fontes_origem else (self.dest_dir or "")
+        result = w.create_file_dialog(dialog_type=20, directory=start)  # FOLDER_DIALOG
         if result and len(result) > 0:
             p = result[0] if isinstance(result, (list, tuple)) else str(result)
             if p and p not in self.fontes_origem:
@@ -93,19 +99,21 @@ class Api:
                 )
                 if not is_nested:
                     self.fontes_origem.append(p)
+                    self._save_fontes()
         return {"count": len(self.fontes_origem), "paths": list(self.fontes_origem)}
 
     def remover_fonte(self, index: int) -> dict:
         """Remove uma fonte pelo índice."""
         if 0 <= index < len(self.fontes_origem):
             self.fontes_origem.pop(index)
+            self._save_fontes()
         return {"count": len(self.fontes_origem), "paths": list(self.fontes_origem)}
 
     def selecionar_destino(self) -> dict:
         w = self._window
         if not w:
             return {"path": ""}
-        result = w.create_file_dialog(dialog_type=20)
+        result = w.create_file_dialog(dialog_type=20, directory=self.dest_dir or "")
         if result and len(result) > 0:
             p = result[0] if isinstance(result, (list, tuple)) else str(result)
             if p:
@@ -297,7 +305,7 @@ class Api:
             return {"error": "Janela indisponivel.", "total": 0}
 
         # Pick trash folder
-        result = w.create_file_dialog(dialog_type=20)
+        result = w.create_file_dialog(dialog_type=20, directory=self.dest_dir or "")
         if not result or len(result) == 0:
             return {"total": 0}
 
