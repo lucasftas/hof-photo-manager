@@ -1408,7 +1408,33 @@ function toggleSelect(gid, checked) {
     var card = document.getElementById('group-' + gid);
     if (card) card.classList.toggle('selected', checked);
     py('toggle_select', gid, checked);
+    autoSugerirEtapas();
     updateSummary();
+    renderGroups();
+}
+
+function autoSugerirEtapas() {
+    var sels = grupos.filter(function(g) { return g.selecionado && !g.dados_form.paciente; });
+    if (sels.length === 0) return;
+
+    // Sort by date (oldest first)
+    var sorted = sels.slice().sort(function(a, b) {
+        return new Date(a.inicio_iso) - new Date(b.inicio_iso);
+    });
+
+    // Find "Pré" and "Pós imediato" in config (first and second etapas)
+    var etapaPre = configEtapas.length > 0 ? configEtapas[0] : '';
+    var etapaPos = configEtapas.length > 1 ? configEtapas[1] : '';
+
+    if (sorted.length === 1) {
+        sorted[0].dados_form.etapa = etapaPre;
+        py('update_field', sorted[0].id, 'etapa', etapaPre);
+    } else if (sorted.length >= 2) {
+        sorted[0].dados_form.etapa = etapaPre;
+        py('update_field', sorted[0].id, 'etapa', etapaPre);
+        sorted[sorted.length - 1].dados_form.etapa = etapaPos;
+        py('update_field', sorted[sorted.length - 1].id, 'etapa', etapaPos);
+    }
 }
 
 function toggleMinimize(gid) {
@@ -1487,7 +1513,16 @@ async function confirmarTratamento() {
         return;
     }
 
-    var selCount = grupos.filter(function(g) { return g.selecionado; }).length;
+    // Validate: all selected groups must have etapa
+    var sels = grupos.filter(function(g) { return g.selecionado; });
+    var semEtapa = sels.filter(function(g) { return !g.dados_form.etapa; });
+    if (semEtapa.length > 0) {
+        var ids = semEtapa.map(function(g) { return '#' + g.id; }).join(', ');
+        alert('Todos os grupos precisam ter uma etapa definida.\n\nSem etapa: Grupo(s) ' + ids + '\n\nFeche este popup e selecione a etapa nos grupos antes de confirmar.');
+        return;
+    }
+
+    var selCount = sels.length;
     fecharTratamentoPopup();
 
     // Show toast immediately
