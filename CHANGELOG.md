@@ -2,6 +2,27 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas aqui.
 
+## [0.5.0] — 2026-03-26 — Timeline, Divisores Visuais e Deteccao EXIF
+
+### Adicionado
+- Timeline com miniaturas progressivas entre sidebar e grupos
+- Ferramenta tesoura para marcar divisores visuais entre fotos
+- Aplicacao em lote de multiplas divisoes com barra de progresso
+- Deteccao de mudancas EXIF (ISO, abertura, focal, white balance) entre fotos consecutivas
+- Merge de grupos adjacentes (X no separador da timeline)
+- Threshold ajustavel por grupo (1min a 60min)
+- Botao "Dividir aqui" na preview de cada grupo
+- UI bloqueada durante geracao de miniaturas, liberada ao concluir
+- Toast separado "Gerando miniaturas..." durante carregamento da timeline
+
+### Alterado
+- Removida dependencia de tkinter (utils.py e build)
+- Leitura EXIF expandida com tags extras no processing.py
+- FotoItem agora armazena exif_hints
+- GrupoPaciente com metodo dividir_em para splits seguros
+
+---
+
 ## [0.4.0] — 2026-03-26 — Sessao Persistente + Confirmacao de Copia
 
 ### Adicionado
