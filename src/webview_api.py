@@ -136,6 +136,7 @@ class Api:
             self._grupos_por_id = {g.id: g for g in grupos}
             result_container["grupos"] = self._serialize_grupos()
             result_container["datas"] = self._get_datas()
+            result_container["timeline"] = self.get_timeline_data()
             result_container["professores"] = self.config.get("professores", [])
             result_container["procedimentos"] = self.config.get("procedimentos", [])
             result_container["etapas"] = self.config.get("etapas", [])
@@ -192,6 +193,164 @@ class Api:
     def _get_datas(self) -> list[str]:
         datas = sorted(set(g.data_obj_dia for g in self.grupos_pacientes), reverse=True)
         return [d.strftime("%d/%m/%Y") for d in datas]
+
+    def get_timeline_data(self) -> list[dict]:
+        """Retorna dados para a timeline sem thumbnails (rapido)."""
+        items = []
+        for g in self.grupos_pacientes:
+            if g.dados_form.get("paciente"):
+                continue
+            for i, f in enumerate(g.fotos_visuais):
+                items.append({
+                    "gid": g.id,
+                    "foto_index": i,
+                    "hora": f.data_captura.strftime("%H:%M:%S"),
+                    "nome": f.nome_base,
+                    "hints": f.exif_hints,
+                })
+        return items
+
+    def get_timeline_thumbs(self, start: int, count: int) -> list[dict]:
+        """Carrega thumbnails da timeline em lotes."""
+        items = []
+        idx = 0
+        for g in self.grupos_pacientes:
+            if g.dados_form.get("paciente"):
+                continue
+            for f in g.fotos_visuais:
+                if idx >= start and idx < start + count:
+                    items.append({
+                        "idx": idx,
+                        "thumb": _thumbnail_b64(f.caminho, g.rotacao, size=50),
+                    })
+                idx += 1
+                if idx >= start + count:
+                    return items
+        return items
+
+    def _rebuild_ids(self) -> None:
+        """Reassign sequential IDs and rebuild lookup."""
+        for i, g in enumerate(self.grupos_pacientes):
+            g.id = i + 1
+        self._grupos_por_id = {g.id: g for g in self.grupos_pacientes}
+
+    def dividir_grupo(self, gid: int, visual_index: int) -> dict:
+        """Divide um grupo na posição visual_index."""
+        g = self._grupos_por_id.get(gid)
+        if not g:
+            return {"error": "Grupo não encontrado"}
+
+        novo_id = max(gg.id for gg in self.grupos_pacientes) + 1
+        novo = g.dividir_em(visual_index, novo_id)
+        if not novo:
+            return {"error": "Impossível dividir nesta posição"}
+
+        # Insert new group after the original
+        idx = self.grupos_pacientes.index(g)
+        self.grupos_pacientes.insert(idx + 1, novo)
+        self._rebuild_ids()
+
+        return {
+            "grupos": self._serialize_grupos(),
+            "datas": self._get_datas(),
+            "timeline": self.get_timeline_data(),
+        }
+
+    def reagrupar_grupo(self, gid: int, threshold_secs: int) -> dict:
+        """Re-agrupa as fotos de um grupo com um threshold diferente."""
+        g = self._grupos_por_id.get(gid)
+        if not g:
+            return {"error": "Grupo não encontrado"}
+
+        fotos = sorted(g.fotos, key=lambda x: x.data_captura)
+        if len(fotos) < 2:
+            return {"grupos": self._serialize_grupos()}
+
+        # Build new sub-groups
+        idx = self.grupos_pacientes.index(g)
+        self.grupos_pacientes.remove(g)
+
+        new_groups = []
+        curr = GrupoPaciente(1, fotos[0], rotacao=g.rotacao)
+        new_groups.append(curr)
+
+        for i in range(1, len(fotos)):
+            diff = (fotos[i].data_captura - fotos[i - 1].data_captura).total_seconds()
+            if diff > threshold_secs:
+                curr._atualizar_cache_visual()
+                curr = GrupoPaciente(1, fotos[i], rotacao=g.rotacao)
+                new_groups.append(curr)
+            else:
+                curr.fotos.append(fotos[i])
+        curr._atualizar_cache_visual()
+
+        # Insert at original position
+        for i, ng in enumerate(new_groups):
+            self.grupos_pacientes.insert(idx + i, ng)
+
+        self._rebuild_ids()
+
+        return {
+            "grupos": self._serialize_grupos(),
+            "datas": self._get_datas(),
+            "timeline": self.get_timeline_data(),
+        }
+
+    def aplicar_divisores(self, divisores: list[dict]) -> dict:
+        """Aplica multiplos splits de uma vez. Cada divisor: {gid, foto_index}.
+
+        Processa splits do mesmo grupo do maior foto_index para o menor,
+        sem rebuild de IDs entre splits (evita invalidar referências).
+        """
+        # Group splits by gid, sort foto_index descending within each
+        by_gid: dict[int, list[int]] = {}
+        for div in divisores:
+            by_gid.setdefault(div["gid"], []).append(div["foto_index"])
+        for gid in by_gid:
+            by_gid[gid].sort(reverse=True)
+
+        total = len(divisores)
+        done = 0
+
+        for gid, indices in by_gid.items():
+            g = self._grupos_por_id.get(gid)
+            if not g:
+                continue
+            for foto_index in indices:
+                novo_id = max(gg.id for gg in self.grupos_pacientes) + 1
+                novo = g.dividir_em(foto_index, novo_id)
+                if novo:
+                    idx = self.grupos_pacientes.index(g)
+                    self.grupos_pacientes.insert(idx + 1, novo)
+                    # Don't rebuild IDs yet — keep original refs valid
+                    self._grupos_por_id[novo_id] = novo
+                done += 1
+                self._ui_queue.put({"type": "div_progress", "done": done, "total": total})
+
+        self._rebuild_ids()
+
+        return {
+            "grupos": self._serialize_grupos(),
+            "datas": self._get_datas(),
+            "timeline": self.get_timeline_data(),
+        }
+
+    def merge_grupos(self, gid_a: int, gid_b: int) -> dict:
+        """Junta dois grupos adjacentes (remove divisor)."""
+        ga = self._grupos_por_id.get(gid_a)
+        gb = self._grupos_por_id.get(gid_b)
+        if not ga or not gb:
+            return {"error": "Grupo não encontrado"}
+
+        ga.absorver_grupo(gb)
+        self.grupos_pacientes.remove(gb)
+        self._rebuild_ids()
+
+        return {
+            "grupos": self._serialize_grupos(),
+            "datas": self._get_datas(),
+            "timeline": self.get_timeline_data(),
+        }
 
     # ---------------------------------------------------------- Fields
     def update_field(self, gid: int, key: str, value: str) -> None:

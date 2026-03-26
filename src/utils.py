@@ -7,7 +7,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
-from PIL import Image, ImageTk
+from PIL import Image
 
 from src.constants import (
     FORBIDDEN_FILENAME_CHARS,
@@ -73,18 +73,14 @@ def safe_name(s: str) -> str:
 
 def criar_thumbnail(
     path: str | Path, angulo: int = 0, size: int = THUMBNAIL_SIZE
-) -> Optional[ImageTk.PhotoImage]:
-    """Cria thumbnail de uma imagem com rotação opcional.
-
-    Returns:
-        PhotoImage pronto para uso em Tkinter, ou None em caso de erro.
-    """
+) -> Optional[Image.Image]:
+    """Cria thumbnail de uma imagem com rotação opcional."""
     try:
         img = Image.open(path)
         if angulo != 0:
             img = img.rotate(angulo, expand=True)
         img.thumbnail((size, size))
-        return ImageTk.PhotoImage(img)
+        return img
     except (OSError, Image.UnidentifiedImageError, ValueError) as e:
         logging.getLogger(LOGGER_NAME).debug(f"Erro ao criar thumbnail de {path}: {e}")
         return None

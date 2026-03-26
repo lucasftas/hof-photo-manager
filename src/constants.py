@@ -16,6 +16,17 @@ JPG_EXTENSIONS: tuple[str, ...] = (".jpg", ".jpeg")
 EXIF_DATETIME_ORIGINAL: int = 36867
 EXIF_DATETIME: int = 306
 EXIF_DATETIME_FORMAT: str = "%Y:%m:%d %H:%M:%S"
+EXIF_ISO: int = 34855
+EXIF_FNUMBER: int = 33437
+EXIF_FOCAL_LENGTH: int = 37386
+EXIF_WHITE_BALANCE: int = 41987
+EXIF_HINT_TAGS: tuple[tuple[int, str], ...] = (
+    (34855, "iso"),
+    (33437, "fnumber"),
+    (37386, "focal"),
+    (41987, "wb"),
+)
+EXIF_CHANGE_THRESHOLD: float = 0.3  # 30% variation to flag as change
 
 # --- UI ---
 WINDOW_TITLE: str = "HOF Photo Manager"

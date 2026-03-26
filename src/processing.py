@@ -7,7 +7,6 @@ import os
 import shutil
 import string
 import threading
-import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 from queue import Queue
@@ -21,6 +20,7 @@ from src.constants import (
     EXIF_DATETIME,
     EXIF_DATETIME_FORMAT,
     EXIF_DATETIME_ORIGINAL,
+    EXIF_HINT_TAGS,
     GROUP_THRESHOLD_SECS,
     JPG_EXTENSIONS,
     LOGGER_NAME,
@@ -62,6 +62,7 @@ def thread_analise(
                     full = os.path.join(root_dir, f)
                     try:
                         dt = datetime.fromtimestamp(os.path.getmtime(full))
+                        hints: dict[str, Any] = {}
                         if f.lower().endswith(JPG_EXTENSIONS):
                             try:
                                 img = Image.open(full)
@@ -70,9 +71,16 @@ def thread_analise(
                                     s = exif.get(EXIF_DATETIME_ORIGINAL) or exif.get(EXIF_DATETIME)
                                     if s:
                                         dt = datetime.strptime(s, EXIF_DATETIME_FORMAT)
+                                    for tag_id, tag_name in EXIF_HINT_TAGS:
+                                        val = exif.get(tag_id)
+                                        if val is not None:
+                                            # IFDRational to float
+                                            if hasattr(val, 'numerator'):
+                                                val = float(val)
+                                            hints[tag_name] = val
                             except (OSError, AttributeError, KeyError, ValueError) as e:
                                 logger.debug(f"EXIF indisponível para {f}: {e}")
-                        arquivos.append(FotoItem(full, dt))
+                        arquivos.append(FotoItem(full, dt, hints))
                     except OSError as e:
                         logger.error(f"Erro lendo {f}: {e}")
 

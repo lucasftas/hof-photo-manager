@@ -205,6 +205,191 @@ body {
     overflow: hidden;
 }
 
+/* Timeline panel */
+.timeline-panel {
+    width: 0;
+    overflow-y: auto;
+    background: #fff;
+    border-right: none;
+    flex-shrink: 0;
+    transition: width 0.25s, border 0.25s;
+}
+.timeline-panel.visible {
+    width: 120px;
+    border-right: 1px solid #e0e0e0;
+}
+.timeline-panel .tl-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    text-align: center;
+    padding: 8px 4px 4px;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+}
+
+.tl-group-block {
+    border-left: 3px solid #007bff;
+    margin: 0 4px 2px 6px;
+    padding: 2px 0;
+}
+.tl-group-block:nth-child(even) { border-left-color: #28a745; }
+.tl-group-block:nth-child(3n) { border-left-color: #fd7e14; }
+.tl-group-block:nth-child(4n) { border-left-color: #6f42c1; }
+
+.tl-separator {
+    height: 2px;
+    background: #e0e0e0;
+    margin: 3px 6px;
+    position: relative;
+}
+
+.tl-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s;
+}
+.tl-item:hover { background: #f0f0f0; }
+.tl-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+.tl-item .tl-time {
+    font-size: 9px;
+    color: #888;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+.tl-item.exif-change {
+    border-left: 2px solid #fd7e14;
+}
+
+/* Divider mode */
+.timeline-panel.divider-active { cursor: crosshair; }
+.timeline-panel.divider-active .tl-item { cursor: crosshair; }
+
+/* Pending divider marker (visual only, not yet applied) */
+.tl-pending-divider {
+    height: 6px;
+    background: #c5221f;
+    margin: 1px 6px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    animation: divPulse 1s infinite alternate;
+}
+.tl-pending-divider:hover { background: #a01a18; }
+.tl-pending-divider .tl-div-x {
+    font-size: 10px;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+}
+@keyframes divPulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
+/* Hover preview in divider mode: highlight gap between two photos */
+.tl-item.div-above { border-bottom: 3px solid #c5221f; padding-bottom: 0; }
+.tl-item.div-below { border-top: 3px solid #c5221f; padding-top: 0; }
+
+/* Existing group separator (already split) */
+.tl-divider-placed {
+    height: 5px;
+    background: #007bff;
+    margin: 2px 6px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.tl-divider-placed:hover { background: #0056b3; }
+.tl-divider-placed .tl-div-x {
+    font-size: 9px;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Apply button at bottom of timeline */
+.tl-apply-bar {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 6px;
+    border-top: 1px solid #e0e0e0;
+}
+.tl-apply-bar button {
+    width: 100%;
+    padding: 6px;
+    border: none;
+    border-radius: 6px;
+    background: #c5221f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.tl-apply-bar button:hover { background: #a01a18; }
+.tl-apply-bar button:disabled { background: #ccc; cursor: not-allowed; }
+.tl-apply-bar .tl-apply-progress {
+    height: 3px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.tl-apply-bar .tl-apply-progress .tl-apply-fill {
+    height: 100%;
+    background: #fff;
+    width: 0%;
+    transition: width 0.2s;
+}
+
+/* Divider button in timeline title */
+.tl-title .tl-scissor {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 6px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 11px;
+    vertical-align: middle;
+}
+.tl-title .tl-scissor:hover { background: #f0f0f0; }
+.tl-title .tl-scissor.active { background: #c5221f; color: #fff; border-color: #c5221f; }
+
+/* Timeline progress */
+.tl-progress {
+    height: 3px;
+    background: #e0e0e0;
+    margin: 0 6px 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+.tl-progress .tl-fill {
+    height: 100%;
+    background: #007bff;
+    width: 0%;
+    transition: width 0.3s;
+}
+
 .groups-panel {
     flex: 1;
     overflow-y: auto;
@@ -554,6 +739,32 @@ body {
 }
 .group-header .toggle-btn:hover { background: #f0f0f0; }
 
+/* Split button */
+.split-btn {
+    padding: 3px 10px;
+    border: 1px solid #fd7e14;
+    border-radius: 4px;
+    background: #fff;
+    color: #fd7e14;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.split-btn:hover { background: #fd7e14; color: #fff; }
+
+/* Threshold dropdown in group header */
+.group-header .threshold-select {
+    padding: 2px 4px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 10px;
+    background: #fff;
+    cursor: pointer;
+    color: #666;
+    flex-shrink: 0;
+}
+
 .group-body {
     display: flex;
     padding: 0 10px 10px;
@@ -855,6 +1066,7 @@ body {
         <!-- Content -->
         <div class="content-area">
             <div class="groups-columns">
+                <div class="timeline-panel" id="timelinePanel"></div>
                 <div class="groups-panel" id="groupsPanel">
                     <div class="empty-state">
                         <p>Detecte cartoes ou adicione uma pasta para comecar</p>
@@ -1004,6 +1216,7 @@ async function py(method, ...args) {
 
 let treeState = {}; // { paciente_name: true/false } — tracks open/closed nodes
 let expandedTreatedId = null; // which treated card is showing preview
+let timelineData = []; // timeline items from backend
 
 // ==================== Init ====================
 window.addEventListener('pywebviewready', async function() {
@@ -1143,11 +1356,18 @@ async function iniciarAnalise() {
         configProfessores = result.professores || configProfessores;
         configProcedimentos = result.procedimentos || configProcedimentos;
         configEtapas = result.etapas || configEtapas;
+        timelineData = result.timeline || [];
         populateDateFilters(result.datas);
         renderGroups();
         document.getElementById('btnTratar').disabled = false;
         document.getElementById('statusbar').textContent = 'Analise concluida: ' + grupos.length + ' grupos encontrados.';
-        showToast('Analise concluida: ' + grupos.length + ' grupos encontrados', 2500);
+        showToast('Analise concluida: ' + grupos.length + ' grupos', 2000);
+
+        // Timeline renders structure, thumbs load — UI locked until done
+        document.getElementById('groupsPanel').style.opacity = '0.4';
+        document.getElementById('groupsPanel').style.pointerEvents = 'none';
+        document.getElementById('btnTratar').disabled = true;
+        renderTimelineStructure();
     }
     document.getElementById('btnAnalisar').disabled = false;
     checkReady();
@@ -1443,6 +1663,22 @@ function buildGroupCard(g) {
 
     var fonteLine = g.fonte_path ? '<span class="fonte-line">' + esc(g.fonte_path) + '</span>' : '';
 
+    // Threshold dropdown
+    var thresholdHtml = '<select class="threshold-select" onchange="reagruparGrupo(' + g.id + ', this.value)" title="Threshold de agrupamento">' +
+        '<option value="60"' + (60 === 1200 ? '' : '') + '>1min</option>' +
+        '<option value="120">2min</option>' +
+        '<option value="300">5min</option>' +
+        '<option value="600">10min</option>' +
+        '<option value="1200" selected>20min</option>' +
+        '<option value="1800">30min</option>' +
+        '<option value="3600">60min</option>' +
+        '</select>';
+
+    // Split button (only if >1 photo)
+    var splitHtml = g.total_clicks > 1
+        ? '<button class="split-btn" onclick="dividirGrupo(' + g.id + ')" title="Dividir grupo na foto atual">Dividir aqui</button>'
+        : '';
+
     return '<div class="group-card' + selectedClass + treatedClass + '" id="group-' + g.id + '">' +
         '<div class="group-header">' +
             '<input type="checkbox" ' + (g.selecionado ? 'checked' : '') +
@@ -1451,6 +1687,7 @@ function buildGroupCard(g) {
                 'Grupo #' + g.id + ' <span>| ' + g.hora + ' | ' + g.total_clicks + ' fotos | ' + g.tamanho_str + '</span>' +
                 badges + fonteLine +
             '</div>' +
+            thresholdHtml +
             '<button class="toggle-btn" onclick="toggleMinimize(' + g.id + ')">' +
                 (g.minimized ? '+' : '-') +
             '</button>' +
@@ -1467,6 +1704,7 @@ function buildGroupCard(g) {
                     '<button onclick="rotacionar(' + g.id + ', 90)">&#8634;</button>' +
                     '<button onclick="rotacionar(' + g.id + ', -90)">&#8635;</button>' +
                 '</div>' +
+                splitHtml +
             '</div>' +
             '<div class="form-section">' +
                 '<div class="tags-row">' +
@@ -1529,6 +1767,323 @@ function toggleMinimize(gid) {
     if (!g) return;
     g.minimized = !g.minimized;
     renderGroups();
+}
+
+// ==================== Timeline ====================
+var dividerMode = false;
+var pendingDividers = []; // [{tlIndex, gid, foto_index}] — visual markers not yet applied
+
+function buildTimelineHtml() {
+    var scissorClass = dividerMode ? ' active' : '';
+    var html = '<div class="tl-title">Timeline <button class="tl-scissor' + scissorClass + '" onclick="toggleDividerMode()" title="Modo divisor">&#9986;</button></div>';
+    html += '<div class="tl-progress"><div class="tl-fill" id="tlProgressFill"></div></div>';
+
+    var currentGid = null;
+    for (var i = 0; i < timelineData.length; i++) {
+        var item = timelineData[i];
+
+        if (item.gid !== currentGid) {
+            if (currentGid !== null) {
+                html += '</div>';
+                html += '<div class="tl-divider-placed" onclick="tlRemoveDivider(' + currentGid + ',' + item.gid + ')" title="Remover divisao (merge)">';
+                html += '<span class="tl-div-x">&times;</span>';
+                html += '</div>';
+            }
+            html += '<div class="tl-group-block" data-gid="' + item.gid + '">';
+            currentGid = item.gid;
+        }
+
+        var hasChange = false;
+        if (i > 0 && timelineData[i - 1].gid === item.gid) {
+            hasChange = detectExifChange(timelineData[i - 1].hints, item.hints);
+        }
+        var changeClass = hasChange ? ' exif-change' : '';
+
+        html += '<div class="tl-item' + changeClass + '" id="tl-' + i + '" data-idx="' + i + '" data-gid="' + item.gid + '" data-fidx="' + item.foto_index + '"';
+        html += ' onmouseenter="tlHover(' + i + ')" onmouseleave="tlLeave(' + i + ')"';
+        html += ' onclick="tlClick(' + i + ')"';
+        html += ' title="' + esc(item.nome) + ' | ' + item.hora + '">';
+        html += '<div style="width:40px;height:40px;background:#eee;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa" id="tlthumb-' + i + '">...</div>';
+        html += '<span class="tl-time">' + item.hora + '</span>';
+        html += '</div>';
+
+        if (hasPendingDivider(i)) {
+            html += '<div class="tl-pending-divider" onclick="removePendingDivider(' + i + ')" title="Clique para remover">';
+            html += '<span class="tl-div-x">&times;</span>';
+            html += '</div>';
+        }
+    }
+    if (currentGid !== null) html += '</div>';
+
+    if (pendingDividers.length > 0) {
+        html += '<div class="tl-apply-bar">';
+        html += '<button id="btnAplicarDiv" onclick="aplicarDivisores()">Dividir (' + pendingDividers.length + ')</button>';
+        html += '<div class="tl-apply-progress"><div class="tl-apply-fill" id="tlApplyFill"></div></div>';
+        html += '</div>';
+    }
+
+    return html;
+}
+
+// Full render with thumb loading (used after splits/merges)
+function renderTimeline() {
+    var panel = document.getElementById('timelinePanel');
+    if (!timelineData.length) { panel.classList.remove('visible'); panel.innerHTML = ''; return; }
+    panel.classList.add('visible');
+    panel.classList.toggle('divider-active', dividerMode);
+    panel.innerHTML = buildTimelineHtml();
+    loadTimelineThumbs(0);
+}
+
+// Structure only (instant), then thumbs load in background with separate toast
+function renderTimelineStructure() {
+    var panel = document.getElementById('timelinePanel');
+    if (!timelineData.length) { panel.classList.remove('visible'); panel.innerHTML = ''; return; }
+    panel.classList.add('visible');
+    panel.classList.toggle('divider-active', dividerMode);
+    panel.innerHTML = buildTimelineHtml();
+
+    // Load thumbs in background with its own toast
+    showToast('Gerando miniaturas...');
+    loadTimelineThumbsWithToast(0);
+}
+
+async function loadTimelineThumbsWithToast(start) {
+    if (start >= timelineData.length) {
+        var fill = document.getElementById('tlProgressFill');
+        if (fill) { fill.style.width = '100%'; setTimeout(function() { if (fill) fill.style.width = '0%'; }, 500); }
+        showToast('Miniaturas prontas', 1500);
+        // Unlock UI
+        document.getElementById('groupsPanel').style.opacity = '';
+        document.getElementById('groupsPanel').style.pointerEvents = '';
+        document.getElementById('btnTratar').disabled = false;
+        return;
+    }
+    var batch = await py('get_timeline_thumbs', start, 8);
+    for (var i = 0; i < batch.length; i++) {
+        var el = document.getElementById('tlthumb-' + batch[i].idx);
+        if (el && batch[i].thumb) {
+            el.innerHTML = '<img src="data:image/jpeg;base64,' + batch[i].thumb + '" style="width:40px;height:40px;object-fit:cover;border-radius:3px">';
+        }
+    }
+    var pct = Math.min(100, ((start + batch.length) / timelineData.length) * 100);
+    var fill = document.getElementById('tlProgressFill');
+    if (fill) fill.style.width = pct + '%';
+    setTimeout(function() { loadTimelineThumbsWithToast(start + 8); }, 30);
+}
+
+function hasPendingDivider(tlIndex) {
+    return pendingDividers.some(function(d) { return d.tlIndex === tlIndex; });
+}
+
+async function loadTimelineThumbs(start) {
+    if (start >= timelineData.length) {
+        var fill = document.getElementById('tlProgressFill');
+        if (fill) { fill.style.width = '100%'; setTimeout(function() { if (fill) fill.style.width = '0%'; }, 500); }
+        return;
+    }
+    var batch = await py('get_timeline_thumbs', start, 8);
+    for (var i = 0; i < batch.length; i++) {
+        var el = document.getElementById('tlthumb-' + batch[i].idx);
+        if (el && batch[i].thumb) {
+            el.innerHTML = '<img src="data:image/jpeg;base64,' + batch[i].thumb + '" style="width:40px;height:40px;object-fit:cover;border-radius:3px">';
+        }
+    }
+    var pct = Math.min(100, ((start + batch.length) / timelineData.length) * 100);
+    var fill = document.getElementById('tlProgressFill');
+    if (fill) fill.style.width = pct + '%';
+    setTimeout(function() { loadTimelineThumbs(start + 8); }, 30);
+}
+
+function detectExifChange(prev, curr) {
+    if (!prev || !curr) return false;
+    var keys = ['iso', 'fnumber', 'focal', 'wb'];
+    for (var k = 0; k < keys.length; k++) {
+        var key = keys[k];
+        if (prev[key] != null && curr[key] != null) {
+            var a = parseFloat(prev[key]);
+            var b = parseFloat(curr[key]);
+            if (a > 0 && b > 0 && Math.abs(a - b) / Math.max(a, b) > 0.3) return true;
+            if (key === 'wb' && prev[key] !== curr[key]) return true;
+        }
+    }
+    return false;
+}
+
+function focusGroup(gid) {
+    var el = document.getElementById('group-' + gid);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.boxShadow = '0 0 0 3px #007bff';
+        setTimeout(function() { el.style.boxShadow = ''; }, 1500);
+    }
+}
+
+// ==================== Divider interaction ====================
+function toggleDividerMode() {
+    dividerMode = !dividerMode;
+    var panel = document.getElementById('timelinePanel');
+    panel.classList.toggle('divider-active', dividerMode);
+    // Update scissor button without rebuilding
+    var btn = panel.querySelector('.tl-scissor');
+    if (btn) btn.classList.toggle('active', dividerMode);
+    if (dividerMode) {
+        showToast('Modo divisor: clique entre as fotos para marcar divisao', 2500);
+    }
+}
+
+function tlHover(idx) {
+    if (!dividerMode) return;
+    var el = document.getElementById('tl-' + idx);
+    var next = document.getElementById('tl-' + (idx + 1));
+    if (el) el.classList.add('div-above');
+    if (next) next.classList.add('div-below');
+}
+
+function tlLeave(idx) {
+    var el = document.getElementById('tl-' + idx);
+    var next = document.getElementById('tl-' + (idx + 1));
+    if (el) el.classList.remove('div-above');
+    if (next) next.classList.remove('div-below');
+}
+
+function tlClick(idx) {
+    if (dividerMode) {
+        // Place a pending divider AFTER this photo
+        var item = timelineData[idx];
+        if (!item) return;
+
+        // Check not last in its group and not already placed
+        var nextItem = timelineData[idx + 1];
+        if (!nextItem || nextItem.gid !== item.gid) return; // already a group boundary
+        if (hasPendingDivider(idx)) return; // already placed
+
+        pendingDividers.push({ tlIndex: idx, gid: item.gid, foto_index: item.foto_index });
+
+        // Exit divider mode
+        dividerMode = false;
+        var panel = document.getElementById('timelinePanel');
+        panel.classList.remove('divider-active');
+        var btn = panel.querySelector('.tl-scissor');
+        if (btn) btn.classList.remove('active');
+
+        // Insert divider marker without full rebuild (just re-render to keep thumbs logic simple)
+        // Actually we need to rebuild to show the marker, but thumbs are already cached in DOM
+        renderTimelineKeepThumbs();
+        showToast('Divisao marcada — clique Aplicar ou adicione mais', 2000);
+    } else {
+        // Normal click: focus group
+        focusGroup(timelineData[idx].gid);
+    }
+}
+
+function removePendingDivider(tlIndex) {
+    pendingDividers = pendingDividers.filter(function(d) { return d.tlIndex !== tlIndex; });
+    renderTimelineKeepThumbs();
+    showToast('Divisao removida', 1500);
+}
+
+function renderTimelineKeepThumbs() {
+    var panel = document.getElementById('timelinePanel');
+    if (!timelineData.length) { panel.classList.remove('visible'); panel.innerHTML = ''; return; }
+
+    // Save cached thumbs
+    var thumbCache = {};
+    for (var i = 0; i < timelineData.length; i++) {
+        var el = document.getElementById('tlthumb-' + i);
+        if (el && el.querySelector('img')) thumbCache[i] = el.innerHTML;
+    }
+
+    panel.classList.add('visible');
+    panel.classList.toggle('divider-active', dividerMode);
+    panel.innerHTML = buildTimelineHtml();
+
+    // Restore cached thumbs (no reload)
+    for (var idx in thumbCache) {
+        var el = document.getElementById('tlthumb-' + idx);
+        if (el) el.innerHTML = thumbCache[idx];
+    }
+}
+
+async function aplicarDivisores() {
+    if (!pendingDividers.length) return;
+
+    var btn = document.getElementById('btnAplicarDiv');
+    var fill = document.getElementById('tlApplyFill');
+    if (btn) { btn.textContent = 'Dividindo...'; btn.disabled = true; }
+    if (fill) fill.style.width = '10%';
+
+    var splits = pendingDividers.map(function(d) {
+        return { gid: d.gid, foto_index: d.foto_index };
+    });
+    var total = splits.length;
+
+    if (fill) fill.style.width = '30%';
+
+    var result = await py('aplicar_divisores', splits);
+    pendingDividers = [];
+
+    if (fill) fill.style.width = '80%';
+
+    if (result.error) {
+        showToast(result.error, 2000);
+        if (btn) { btn.textContent = 'Dividir'; btn.disabled = false; }
+        return;
+    }
+    if (result.grupos) {
+        grupos = result.grupos;
+        timelineData = result.timeline || timelineData;
+        if (fill) fill.style.width = '100%';
+        renderGroups();
+        renderTimeline();
+        showToast(total + ' divisao(oes) aplicada(s)', 2500);
+    }
+}
+
+async function tlRemoveDivider(gidA, gidB) {
+    var result = await py('merge_grupos', gidA, gidB);
+    if (result.error) { showToast(result.error, 2000); return; }
+    if (result.grupos) {
+        grupos = result.grupos;
+        timelineData = result.timeline || timelineData;
+        renderGroups();
+        renderTimeline();
+        showToast('Grupos mesclados', 2000);
+    }
+}
+
+// ==================== Split & Regroup ====================
+async function dividirGrupo(gid) {
+    var g = grupos.find(function(x) { return x.id === gid; });
+    if (!g || g.total_clicks <= 1) return;
+
+    var result = await py('dividir_grupo', gid, g.preview_index);
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+    if (result.grupos) {
+        grupos = result.grupos;
+        timelineData = result.timeline || timelineData;
+        renderGroups();
+        renderTimeline();
+        showToast('Grupo dividido em 2', 2000);
+    }
+}
+
+async function reagruparGrupo(gid, thresholdSecs) {
+    var result = await py('reagrupar_grupo', gid, parseInt(thresholdSecs));
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+    if (result.grupos) {
+        grupos = result.grupos;
+        timelineData = result.timeline || timelineData;
+        renderGroups();
+        renderTimeline();
+        showToast('Grupo re-agrupado com threshold de ' + (parseInt(thresholdSecs) / 60) + 'min', 2000);
+    }
 }
 
 async function mudarFoto(gid, delta) {

@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from typing import Any
+
 from src.constants import BYTES_PER_GB, BYTES_PER_MB, JPG_EXTENSIONS, LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
@@ -19,6 +21,7 @@ class FotoItem:
 
     caminho: str
     data_captura: datetime
+    exif_hints: dict[str, Any] = field(default_factory=dict)
     nome_arquivo: str = field(init=False)
     extensao: str = field(init=False)
     nome_base: str = field(init=False)
@@ -126,3 +129,33 @@ class GrupoPaciente:
             return None
         idx = max(0, min(self.preview_index, len(self.fotos_visuais) - 1))
         return self.fotos_visuais[idx]
+
+    def dividir_em(self, visual_index: int, novo_id: int) -> Optional[GrupoPaciente]:
+        """Divide o grupo na posição visual_index.
+
+        Retorna o novo grupo (fotos após o índice) ou None se impossível.
+        O grupo atual fica com as fotos até visual_index (inclusive).
+        """
+        if visual_index < 0 or visual_index >= len(self.fotos_visuais) - 1:
+            return None
+
+        # Get the base names for the split point
+        fotos_antes_bases = {f.nome_base for f in self.fotos_visuais[:visual_index + 1]}
+
+        fotos_a = [f for f in self.fotos if f.nome_base in fotos_antes_bases]
+        fotos_b = [f for f in self.fotos if f.nome_base not in fotos_antes_bases]
+
+        if not fotos_a or not fotos_b:
+            return None
+
+        # Update current group
+        self.fotos = fotos_a
+        self._atualizar_cache_visual()
+
+        # Create new group
+        novo = GrupoPaciente(novo_id, fotos_b[0], rotacao=self.rotacao)
+        for f in fotos_b[1:]:
+            novo.fotos.append(f)
+        novo._atualizar_cache_visual()
+
+        return novo
