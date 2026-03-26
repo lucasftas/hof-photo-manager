@@ -2,12 +2,22 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas aqui.
 
-## [Unreleased] — Migração para PyWebView
+## [0.3.0] — 2026-03-26 — PyWebView + UX Tratados
 
 ### Adicionado
 - Interface web com HTML/CSS/JavaScript via `pywebview` (`src/ui.html`)
 - API bridge Python-JavaScript (`src/webview_api.py`)
 - Dependência `pywebview>=4.0` no `requirements.txt`
+- Layout de duas colunas: esquerda (não tratados) e direita (tratados em árvore por paciente)
+- Árvore de pacientes com expand/collapse estilo Windows Explorer
+- Botão de edição (lápis) na raiz da árvore — edita nome/prof/proc de todos os subgrupos
+- Botão de desfazer na raiz — devolve todos os subgrupos para a esquerda
+- Botão de desfazer individual em cada subgrupo
+- Tags de etapa inline em cada subgrupo tratado
+- Preview com navegação de fotos ao clicar em subgrupo tratado
+- Toast notifications para análise e tratamento
+- ESC para desselecionar grupos e fechar modais/previews
+- CLAUDE.md com regras do projeto
 
 ### Removido
 - Interface Tkinter (`src/app.py`) — substituída pela interface web
